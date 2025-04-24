@@ -1,8 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext } from "react";
 import { Session } from "next-auth";
-import { useRouter } from "next/navigation";
 import { signIn, signOut, useSession } from "next-auth/react";
 
 interface AuthContextType {
@@ -23,7 +22,6 @@ export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
-  const router = useRouter();
 
   const handleSignIn = async () => {
     await signIn("spotify", { callbackUrl: "/dashboard" });

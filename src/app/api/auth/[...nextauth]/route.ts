@@ -1,6 +1,9 @@
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions } from "next-auth";
 import SpotifyProvider from "next-auth/providers/spotify";
 import { JWT } from "next-auth/jwt";
+import { SpotifyProfile } from "next-auth/providers/spotify";
+import { Account, Profile, Session } from "next-auth";
+import { AdapterUser } from "next-auth/adapters";
 
 const scopes = [
   "user-read-email",
@@ -12,12 +15,41 @@ const scopes = [
   "playlist-modify-private",
 ].join(" ");
 
-/**
- * Takes a token, and returns a new token with updated
- * `accessToken` and `accessTokenExpires`. If an error occurs,
- * returns the old token and an error property
- */
-async function refreshAccessToken(token: JWT): Promise<JWT> {
+interface ExtendedJWT extends JWT {
+  accessToken: string;
+  accessTokenExpires: number;
+  refreshToken: string;
+  user?: SpotifyProfile;
+  error?: string;
+}
+
+interface ExtendedSession extends Session {
+  accessToken: string;
+  error?: string;
+}
+
+async function sessionCallback(
+  params:
+    | { session: Session; token: ExtendedJWT }
+    | {
+        session: Session;
+        token: JWT;
+        user: AdapterUser;
+        trigger: "update";
+        newSession: Session;
+      }
+): Promise<ExtendedSession> {
+  const { session, token } = params as { session: Session; token: ExtendedJWT };
+
+  return {
+    ...session,
+    user: token.user ?? session.user,
+    accessToken: token.accessToken,
+    error: token.error,
+  };
+}
+
+async function refreshAccessToken(token: ExtendedJWT): Promise<ExtendedJWT> {
   try {
     const basicAuth = Buffer.from(
       `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
@@ -31,27 +63,23 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
       },
       body: new URLSearchParams({
         grant_type: "refresh_token",
-        refresh_token: token.refreshToken as string,
+        refresh_token: token.refreshToken,
       }),
       cache: "no-store",
     });
 
     const refreshedTokens = await response.json();
 
-    if (!response.ok) {
-      throw refreshedTokens;
-    }
+    if (!response.ok) throw refreshedTokens;
 
     return {
       ...token,
       accessToken: refreshedTokens.access_token,
       accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
-      // Fall back to old refresh token if no new one is provided
       refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
     };
   } catch (error) {
     console.error("Error refreshing access token", error);
-
     return {
       ...token,
       error: "RefreshAccessTokenError",
@@ -59,7 +87,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
   }
 }
 
-export const authOptions = {
+export const authOptions: AuthOptions = {
   providers: [
     SpotifyProvider({
       clientId: process.env.SPOTIFY_CLIENT_ID || "",
@@ -67,7 +95,6 @@ export const authOptions = {
       authorization: {
         params: {
           scope: scopes,
-          // Force approval prompt to ensure we always get a refresh token
           prompt: "consent",
         },
       },
@@ -79,37 +106,33 @@ export const authOptions = {
   },
   debug: process.env.NODE_ENV === "development",
   callbacks: {
-    async jwt({ token, account, profile }) {
-      // Initial sign in
+    async jwt({
+      token,
+      account,
+      profile,
+    }: {
+      token: JWT;
+      account?: Account | null;
+      profile?: Profile;
+    }): Promise<ExtendedJWT> {
       if (account && profile) {
         return {
           ...token,
-          accessToken: account.access_token,
-          refreshToken: account.refresh_token,
-          accessTokenExpires: account.expires_at
-            ? account.expires_at * 1000
-            : 0,
-          user: profile,
+          accessToken: account.access_token!,
+          refreshToken: account.refresh_token!,
+          accessTokenExpires: account.expires_at! * 1000,
+          user: profile as SpotifyProfile,
         };
       }
 
-      // Return previous token if the access token has not expired yet
-      if (Date.now() < (token.accessTokenExpires as number)) {
-        return token;
+      if (Date.now() < (token as ExtendedJWT).accessTokenExpires) {
+        return token as ExtendedJWT;
       }
 
-      // Access token has expired, try to update it
-      return refreshAccessToken(token);
+      return refreshAccessToken(token as ExtendedJWT);
     },
-    async session({ session, token }) {
-      if (token.user) {
-        session.user = token.user as any;
-      }
-      session.accessToken = token.accessToken as string;
-      session.error = token.error as string;
 
-      return session;
-    },
+    session: sessionCallback,
   },
   pages: {
     signIn: "/",

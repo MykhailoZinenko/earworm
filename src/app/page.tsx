@@ -3,6 +3,7 @@
 import { useAuth } from "./context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const { signIn, status } = useAuth();
@@ -23,13 +24,13 @@ export default function Home() {
           Track your music habits and get personalized recommendations
         </p>
 
-        <button
+        <Button
           onClick={() => signIn()}
-          className="px-6 py-3 rounded-md bg-green-500 text-white font-medium hover:bg-green-600 transition-colors"
+          size="lg"
           disabled={status === "loading"}
         >
           {status === "loading" ? "Loading..." : "Login with Spotify"}
-        </button>
+        </Button>
       </div>
     </main>
   );

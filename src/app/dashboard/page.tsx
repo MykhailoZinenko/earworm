@@ -3,7 +3,10 @@
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { SpotifyProfile } from "@auth/core/providers/spotify";
 
 export default function Dashboard() {
   const { session, status, signOut } = useAuth();
@@ -24,78 +27,66 @@ export default function Dashboard() {
     );
   }
 
-  const spotifyUser = session?.user as any;
+  const spotifyUser = session?.user as SpotifyProfile;
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-8">
-      <div className="max-w-4xl w-full">
+    <main className="min-h-screen p-8">
+      <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-12">
-          <h1 className="text-3xl font-bold">Earworm Dashboard</h1>
-          <button
-            onClick={() => signOut()}
-            className="px-4 py-2 rounded-md bg-red-500 text-white hover:bg-red-600 transition-colors"
-          >
-            Sign Out
-          </button>
+          <h1 className="text-3xl font-bold">Earworm</h1>
+          <div className="flex items-center gap-4">
+            <Button variant="destructive" onClick={() => signOut()}>
+              Sign Out
+            </Button>
+          </div>
         </div>
 
         {spotifyUser && (
-          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6 mb-8">
-            <h2 className="text-2xl font-semibold mb-4">User Profile</h2>
-            <div className="flex items-center space-x-6">
-              {spotifyUser.images && spotifyUser.images[0] && (
-                <div className="relative h-24 w-24 rounded-full overflow-hidden">
-                  <Image
-                    src={spotifyUser.images[0].url}
-                    alt={spotifyUser.display_name || "User"}
-                    fill
-                    className="object-cover"
-                  />
+          <Card>
+            <CardHeader>
+              <CardTitle>User Profile</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-6">
+                {spotifyUser.images && spotifyUser.images[0] ? (
+                  <Avatar className="h-24 w-24">
+                    <AvatarImage
+                      src={spotifyUser.images[0].url}
+                      alt={spotifyUser.display_name || "User"}
+                    />
+                    <AvatarFallback>
+                      {spotifyUser.display_name?.[0] || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <Avatar className="h-24 w-24">
+                    <AvatarFallback>
+                      {spotifyUser.display_name?.[0] || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+                <div>
+                  <p className="text-xl font-medium">
+                    {spotifyUser.display_name || "Spotify User"}
+                  </p>
+                  <p className="text-muted-foreground">
+                    {spotifyUser.email || "No email provided"}
+                  </p>
+                  {spotifyUser.country && (
+                    <p className="text-muted-foreground">
+                      Country: {spotifyUser.country}
+                    </p>
+                  )}
+                  {spotifyUser.product && (
+                    <p className="text-muted-foreground">
+                      Subscription: {spotifyUser.product}
+                    </p>
+                  )}
                 </div>
-              )}
-              <div>
-                <p className="text-xl font-medium">
-                  {spotifyUser.display_name || "Spotify User"}
-                </p>
-                <p className="text-gray-600 dark:text-gray-300">
-                  {spotifyUser.email || "No email provided"}
-                </p>
-                {spotifyUser.country && (
-                  <p className="text-gray-600 dark:text-gray-300">
-                    Country: {spotifyUser.country}
-                  </p>
-                )}
-                {spotifyUser.product && (
-                  <p className="text-gray-600 dark:text-gray-300">
-                    Subscription: {spotifyUser.product}
-                  </p>
-                )}
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Your Top Artists</h2>
-            <p className="text-gray-600 dark:text-gray-300">
-              Coming soon! We'll show your most listened artists here.
-            </p>
-          </div>
-          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Your Top Tracks</h2>
-            <p className="text-gray-600 dark:text-gray-300">
-              Coming soon! We'll show your most played tracks here.
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-          <p className="text-gray-600 dark:text-gray-300">
-            Coming soon! We'll show your recent listening activity here.
-          </p>
-        </div>
       </div>
     </main>
   );
