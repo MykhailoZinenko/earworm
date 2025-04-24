@@ -1,20 +1,25 @@
 "use client";
 
 import { useAuth } from "./context/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { LoginDropdown } from "@/components/shared/LoginDropdown";
 
 export default function Home() {
-  const { signIn, status } = useAuth();
+  const { currentSession, isLoading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
+    console.log(currentSession, isLoading);
     // If already authenticated, redirect to dashboard
-    if (status === "authenticated") {
+    if (!isLoading && currentSession) {
       router.push("/dashboard");
     }
-  }, [status, router]);
+  }, [currentSession, isLoading, router]);
+
+  // Check for error parameter
+  const error = searchParams.get("error");
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
@@ -24,13 +29,13 @@ export default function Home() {
           Track your music habits and get personalized recommendations
         </p>
 
-        <Button
-          onClick={() => signIn()}
-          size="lg"
-          disabled={status === "loading"}
-        >
-          {status === "loading" ? "Loading..." : "Login with Spotify"}
-        </Button>
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-8">
+            <p>Error: {error.replace(/_/g, " ")}</p>
+          </div>
+        )}
+
+        <LoginDropdown />
       </div>
     </main>
   );
