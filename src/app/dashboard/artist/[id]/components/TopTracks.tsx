@@ -141,7 +141,7 @@ export function TopTracks({
     <div style={hoverStyle} className="@container">
       {/* Desktop Table View */}
       <div className="hidden @xl:block">
-        <ScrollArea className="h-[540px] pr-4">
+        <ScrollArea className="h-[540px]">
           <Table>
             <TableHeader className="border-b border-white/10">
               <TableRow className="hover:bg-transparent">

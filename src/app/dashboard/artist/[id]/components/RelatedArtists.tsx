@@ -35,7 +35,7 @@ export function RelatedArtists({ similarArtists }: RelatedArtistsProps) {
   };
 
   return (
-    <ScrollArea className="h-[500px] pr-4">
+    <ScrollArea className="h-[500px]">
       <div className="grid grid-cols-1 gap-3">
         {topSimilarArtists.map(({ artist, score, matchReasons }) => {
           const matchStrength = getMatchStrength(score);

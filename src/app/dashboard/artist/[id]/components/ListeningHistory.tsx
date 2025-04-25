@@ -215,7 +215,7 @@ export function ListeningHistory({
           Most Played Songs
         </h3>
 
-        <ScrollArea className="h-[320px] pr-4">
+        <ScrollArea className="h-[320px]">
           {sortedTracks.map(({ track, count, sources, lastPlayed }) => (
             <div
               key={track.id}
