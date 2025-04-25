@@ -20,7 +20,7 @@ export function ChangelogButton() {
         onClick={handleOpen}
         variant={"ghost"}
         className={cn(
-          "w-full flex items-center justify-start gap-4 px-4! py-3! rounded-md text-sm! font-medium transition-colors cursor-pointer h-auto",
+          "w-full flex items-center justify-start gap-4 px-4! py-3! rounded-md text-sm! font-medium transition-colors cursor-pointer h-auto relative",
           "text-[#B3B3B3] hover:text-white hover:bg-[#282828]"
         )}
       >
