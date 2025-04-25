@@ -36,7 +36,7 @@ export function SearchDropdown({
 
   if (isSearching) {
     return (
-      <div className="absolute mt-2 w-full bg-[#282828] rounded-md shadow-lg z-10">
+      <div className="absolute mt-2 w-full bg-[#282828] rounded-md shadow-lg z-100">
         <div className="p-4 text-center text-[#B3B3B3]">Searching...</div>
       </div>
     );
@@ -45,7 +45,7 @@ export function SearchDropdown({
   if (query.trim()) {
     if (searchResults.length > 0) {
       return (
-        <div className="absolute mt-2 w-full bg-[#282828] rounded-md shadow-lg z-10">
+        <div className="absolute mt-2 w-full bg-[#282828] rounded-md shadow-lg z-100">
           <ScrollArea
             style={{ height: `${getDropdownHeight(searchResults.length)}px` }}
           >

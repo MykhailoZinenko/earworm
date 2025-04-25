@@ -30,13 +30,25 @@ const SPOTIFY_API_BASE_URL = "https://api.spotify.com/v1";
 
 // Scopes needed for our application
 const SCOPES = [
-  "user-read-email",
-  "user-read-private",
-  "user-top-read",
-  "user-read-recently-played",
+  "ugc-image-upload",
+  "user-read-playback-state",
+  "user-modify-playback-state",
+  "user-read-currently-playing",
+  "app-remote-control",
+  "streaming",
   "playlist-read-private",
+  "playlist-read-collaborative",
   "playlist-modify-public",
   "playlist-modify-private",
+  "user-library-modify",
+  "user-library-read",
+  "user-top-read",
+  "user-read-playback-position",
+  "user-read-recently-played",
+  "user-follow-read",
+  "user-follow-modify",
+  "user-read-email",
+  "user-read-private",
 ];
 
 // Generate a random string for state validation
@@ -75,6 +87,8 @@ export function getAuthorizationUrl(
   authUrl.searchParams.append("redirect_uri", redirectUri);
   authUrl.searchParams.append("state", state);
   authUrl.searchParams.append("scope", SCOPES.join(" "));
+
+  console.log("Generated auth URL:", authUrl.toString());
 
   // Add optional parameters for forcing login
   if (forceLogin) {

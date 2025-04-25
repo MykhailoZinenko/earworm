@@ -21,6 +21,10 @@ export default function Dashboard() {
         Hello, {currentSession.user.display_name || "there"}!
       </h1>
 
+      {/* <div className="mb-6 md:mb-10">
+        <CurrentStream />
+      </div> */}
+
       {/* Activity Overview */}
       <div className="mb-6 md:mb-10">
         <ActivityOverview />

@@ -16,6 +16,8 @@ export async function GET(request: NextRequest) {
 
     const authUrl = getAuthorizationUrl(clientId, redirectUri, forceLogin);
 
+    console.log(authUrl);
+
     // Redirect the user to Spotify's authorization page
     return NextResponse.redirect(authUrl);
   } catch (error) {
