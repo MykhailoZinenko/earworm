@@ -80,7 +80,7 @@ export function TopItems({ timeRange = "short_term" }: TopItemsProps) {
               value="tracks"
               className="flex-1 data-[state=active]:bg-[#1ED760] data-[state=active]:text-black"
             >
-              Top Tracks
+              Top Songs
             </TabsTrigger>
           </TabsList>
 

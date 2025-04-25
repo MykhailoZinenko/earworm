@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { Track } from "@spotify/web-api-ts-sdk";
 import { Heart, Clock, Star, Loader2 } from "lucide-react";
@@ -140,118 +138,221 @@ export function TopTracks({
   } as React.CSSProperties;
 
   return (
-    <div style={hoverStyle}>
-      <ScrollArea className="h-[540px] pr-4">
-        <Table>
-          <TableHeader className="border-b border-white/10">
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="w-12 text-left font-normal text-white/60 pb-3">
-                #
-              </TableHead>
-              <TableHead className="text-left font-normal text-white/60 pb-3">
-                Title
-              </TableHead>
-              <TableHead className="text-right font-normal text-white/60 pb-3 text-center hidden sm:table-cell">
-                Popularity
-              </TableHead>
-              <TableHead className="text-right font-normal text-white/60 pb-3 w-20">
-                <Clock size={16} className="mx-auto" />
-              </TableHead>
-              <TableHead className="text-center font-normal text-white/60 pb-3 w-16"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {tracks.map((track, index) => {
-              const rank = getUserTrackRank(track.id);
-              const inUserTop = isInUserTopTracks(track.id);
-              const isSaved = savedTracks[track.id] || false;
-              const isActionLoading = actionLoading[track.id] || false;
+    <div style={hoverStyle} className="@container">
+      {/* Desktop Table View */}
+      <div className="hidden @xl:block">
+        <ScrollArea className="h-[540px] pr-4">
+          <Table>
+            <TableHeader className="border-b border-white/10">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="w-12 text-left font-normal text-white/60 pb-3">
+                  #
+                </TableHead>
+                <TableHead className="text-left font-normal text-white/60 pb-3">
+                  Title
+                </TableHead>
+                <TableHead className="text-right font-normal text-white/60 pb-3 text-center">
+                  Popularity
+                </TableHead>
+                <TableHead className="text-right font-normal text-white/60 pb-3 w-20">
+                  <Clock size={16} className="mx-auto" />
+                </TableHead>
+                <TableHead className="text-center font-normal text-white/60 pb-3 w-16"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tracks.map((track, index) => {
+                const rank = getUserTrackRank(track.id);
+                const inUserTop = isInUserTopTracks(track.id);
+                const isSaved = savedTracks[track.id] || false;
+                const isActionLoading = actionLoading[track.id] || false;
 
-              return (
-                <TableRow
-                  key={track.id}
-                  className={`transition-colors border-b border-white/5 hover:bg-[var(--hover-bg)] data-[state=selected]:bg-[var(--hover-bg)]`}
-                >
-                  <TableCell className="py-3 px-2">
-                    <span className="text-white/60 font-medium">
-                      {index + 1}
-                    </span>
-                  </TableCell>
-                  <TableCell className="py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="relative min-w-10 h-10 rounded overflow-hidden bg-white/5">
-                        <img
-                          src={
-                            track.album.images?.[0]?.url || "/placeholder.png"
-                          }
-                          alt={track.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="min-w-0">
-                        <Link
-                          href={`/dashboard/track/${track.id}`}
-                          className="text-white font-medium hover:underline line-clamp-1"
-                        >
-                          {track.name}
-                        </Link>
-
-                        <div className="flex items-center gap-2">
-                          {inUserTop && (
-                            <Badge className="h-4 bg-[#1ED760]/20 text-[#1ED760] border-none text-[10px] px-1">
-                              <Star size={10} className="mr-0.5" />
-                              {rank && rank <= 20 ? `#${rank}` : "TOP"}
-                            </Badge>
-                          )}
-
+                return (
+                  <TableRow
+                    key={track.id}
+                    className={`transition-colors border-b border-white/5 hover:bg-[var(--hover-bg)] data-[state=selected]:bg-[var(--hover-bg)]`}
+                  >
+                    <TableCell className="py-3 px-2">
+                      <span className="text-white/60 font-medium">
+                        {index + 1}
+                      </span>
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="relative min-w-10 h-10 rounded overflow-hidden bg-white/5">
+                          <img
+                            src={
+                              track.album.images?.[0]?.url || "/placeholder.png"
+                            }
+                            alt={track.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0">
                           <Link
-                            href={`/dashboard/album/${track.album.id}`}
-                            className="text-xs text-white/60 hover:text-white/80 hover:underline line-clamp-1"
+                            href={`/dashboard/track/${track.id}`}
+                            className="text-white font-medium hover:underline line-clamp-1"
                           >
-                            {track.album.name}
+                            {track.name}
                           </Link>
+
+                          <div className="flex items-center gap-2">
+                            {inUserTop && (
+                              <Badge className="h-4 bg-[#1ED760]/20 text-[#1ED760] border-none text-[10px] px-1">
+                                <Star size={10} className="mr-0.5" />
+                                {rank && rank <= 20 ? `#${rank}` : "TOP"}
+                              </Badge>
+                            )}
+
+                            <Link
+                              href={`/dashboard/album/${track.album.id}`}
+                              className="text-xs text-white/60 hover:text-white/80 hover:underline line-clamp-1"
+                            >
+                              {track.album.name}
+                            </Link>
+                          </div>
                         </div>
                       </div>
+                    </TableCell>
+                    <TableCell className="py-3 pr-4 text-right text-center">
+                      <div className="flex items-center justify-center">
+                        <div className="w-20 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-[#1ED760]"
+                            style={{ width: `${track.popularity}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-white/60 ml-2">
+                          {track.popularity}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3 pr-4 text-center text-white/60 text-sm">
+                      {formatDuration(track.duration_ms)}
+                    </TableCell>
+                    <TableCell className="py-3 pr-2 text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={isLoading || isActionLoading}
+                        onClick={() => handleToggleSave(track.id)}
+                        className={`text-white hover:bg-white/10 cursor-pointer ${
+                          isSaved ? "text-[#1ED760]" : "text-white/70"
+                        }`}
+                      >
+                        {isActionLoading ? (
+                          <Loader2 size={16} className="animate-spin" />
+                        ) : (
+                          <Heart
+                            size={16}
+                            fill={isSaved ? "#1ED760" : "none"}
+                          />
+                        )}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </ScrollArea>
+      </div>
+
+      {/* Mobile Card View */}
+      <ScrollArea className="h-[540px] pr-4 @xl:hidden">
+        <div className="space-y-4 p-4">
+          {tracks.map((track, index) => {
+            const rank = getUserTrackRank(track.id);
+            const inUserTop = isInUserTopTracks(track.id);
+            const isSaved = savedTracks[track.id] || false;
+            const isActionLoading = actionLoading[track.id] || false;
+
+            return (
+              <div
+                key={track.id}
+                className={`bg-white/5 rounded-lg p-4 flex items-center gap-4 transition-colors hover:bg-[var(--hover-bg)]`}
+              >
+                {/* Track Number & Image */}
+                <div className="flex flex-col items-center relative">
+                  <div className="absolute -top-2 -left-2 bg-[#1ED760] text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center z-10">
+                    {index + 1}
+                  </div>
+                  <div className="relative w-16 h-16 rounded overflow-hidden bg-white/5">
+                    <img
+                      src={track.album.images?.[0]?.url || "/placeholder.png"}
+                      alt={track.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+
+                {/* Track Details */}
+                <div className="flex-grow min-w-0">
+                  <Link
+                    href={`/dashboard/track/${track.id}`}
+                    className="text-white font-medium hover:underline line-clamp-1 mb-1"
+                  >
+                    {track.name}
+                  </Link>
+
+                  <div className="flex items-center gap-2 mb-2">
+                    {inUserTop && (
+                      <Badge className="h-4 bg-[#1ED760]/20 text-[#1ED760] border-none text-[10px] px-1">
+                        <Star size={10} className="mr-0.5" />
+                        {rank && rank <= 20 ? `#${rank}` : "TOP"}
+                      </Badge>
+                    )}
+                    <Link
+                      href={`/dashboard/album/${track.album.id}`}
+                      className="text-xs text-white/60 hover:text-white/80 hover:underline line-clamp-1"
+                    >
+                      {track.album.name}
+                    </Link>
+                  </div>
+
+                  {/* Additional Track Info */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock size={14} className="text-white/60" />
+                      <span className="text-xs text-white/60">
+                        {formatDuration(track.duration_ms)}
+                      </span>
                     </div>
-                  </TableCell>
-                  <TableCell className="py-3 pr-4 text-right hidden sm:table-cell">
-                    <div className="flex items-center justify-center">
-                      <div className="w-20 h-1.5 bg-white/10 rounded-full overflow-hidden">
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-white/60">
+                        {track.popularity}%
+                      </span>
+                      <div className="w-16 h-1.5 bg-white/10 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-[#1ED760]"
                           style={{ width: `${track.popularity}%` }}
                         />
                       </div>
-                      <span className="text-xs text-white/60 ml-2">
-                        {track.popularity}
-                      </span>
                     </div>
-                  </TableCell>
-                  <TableCell className="py-3 pr-4 text-center text-white/60 text-sm">
-                    {formatDuration(track.duration_ms)}
-                  </TableCell>
-                  <TableCell className="py-3 pr-2 text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      disabled={isLoading || isActionLoading}
-                      onClick={() => handleToggleSave(track.id)}
-                      className={`text-white hover:bg-white/10 cursor-pointer ${
-                        isSaved ? "text-[#1ED760]" : "text-white/70"
-                      }`}
-                    >
-                      {isActionLoading ? (
-                        <Loader2 size={16} className="animate-spin" />
-                      ) : (
-                        <Heart size={16} fill={isSaved ? "#1ED760" : "none"} />
-                      )}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                  </div>
+                </div>
+
+                {/* Save/Unsave Button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  disabled={isLoading || isActionLoading}
+                  onClick={() => handleToggleSave(track.id)}
+                  className={`text-white hover:bg-white/10 cursor-pointer ${
+                    isSaved ? "text-[#1ED760]" : "text-white/70"
+                  }`}
+                >
+                  {isActionLoading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Heart size={16} fill={isSaved ? "#1ED760" : "none"} />
+                  )}
+                </Button>
+              </div>
+            );
+          })}
+        </div>
       </ScrollArea>
     </div>
   );

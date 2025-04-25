@@ -279,7 +279,7 @@ export default function ArtistPage() {
             <section>
               <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
                 <span className="bg-[#1ED760] w-1 h-6 rounded-full inline-block"></span>
-                Top Tracks
+                Top Songs
               </h2>
               <TopTracks
                 tracks={topTracks}

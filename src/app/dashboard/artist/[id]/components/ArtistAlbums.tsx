@@ -115,7 +115,7 @@ export function ArtistAlbums({ albums }: ArtistAlbumsProps) {
                     </h4>
                     <p className="text-xs text-white/60">
                       {album.total_tracks}{" "}
-                      {album.total_tracks === 1 ? "track" : "tracks"}
+                      {album.total_tracks === 1 ? "song" : "songs"}
                     </p>
                   </div>
                 </Link>

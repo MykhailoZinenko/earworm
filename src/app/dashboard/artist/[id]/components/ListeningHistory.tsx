@@ -212,7 +212,7 @@ export function ListeningHistory({
       <div className="min-[110rem]:col-span-2 p-5">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <MusicIcon className="text-[#1ED760]" size={18} />
-          Most Played Tracks
+          Most Played Songs
         </h3>
 
         <ScrollArea className="h-[320px] pr-4">
@@ -260,10 +260,10 @@ export function ListeningHistory({
               </div>
 
               {/* Play count & last played */}
-              <div className="text-right text-sm text-white/60">
+              <div className="text-right text-sm text-white/60 hidden @xl:block">
                 <div className="font-medium text-white">
                   {count === 0
-                    ? "No recent plays, BUT"
+                    ? "No recent plays"
                     : count + " " + (count === 1 ? "play" : "plays")}
                 </div>
                 {lastPlayed ? (
@@ -272,9 +272,7 @@ export function ListeningHistory({
                     <span>Last: {formatDate(lastPlayed)}</span>
                   </div>
                 ) : (
-                  <div className="text-xs text-white/40">
-                    In your top tracks
-                  </div>
+                  <div className="text-xs text-white/40">In your top songs</div>
                 )}
               </div>
             </div>

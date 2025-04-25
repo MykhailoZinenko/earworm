@@ -22,7 +22,7 @@ export function StatCards({ stats }: StatCardsProps) {
           <StatCard
             icon={<Headphones className="h-5 w-5 md:h-6 md:w-6 text-black" />}
             iconBgColor="#1ED760"
-            title="Tracks Played"
+            title="Songs Played"
             value={stats.count.toString()}
             subtitle="in the last 7 days"
           />
@@ -40,7 +40,7 @@ export function StatCards({ stats }: StatCardsProps) {
             iconBgColor="#1AB34D"
             title="Most Active Day"
             value={stats.mostActive.day}
-            subtitle={`${stats.mostActive.count} tracks played`}
+            subtitle={`${stats.mostActive.count} songs played`}
           />
 
           <StatCard
