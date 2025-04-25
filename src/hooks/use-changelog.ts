@@ -1,7 +1,7 @@
 // src/hooks/use-changelog.ts
 import { useState, useEffect } from "react";
 
-const CURRENT_VERSION = "0.5.0";
+const CURRENT_VERSION = "0.5.1";
 const CHANGELOG_VERSION_KEY = "earworm_last_viewed_changelog";
 
 export function useChangelog() {

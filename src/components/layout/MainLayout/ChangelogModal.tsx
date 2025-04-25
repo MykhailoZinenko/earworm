@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Rocket, Zap, CodeIcon } from "lucide-react";
+import { Sparkles, Rocket, Zap, CodeIcon, Hammer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ChangelogModalProps {
@@ -11,6 +11,17 @@ interface ChangelogModalProps {
 }
 
 const changelogEntries = [
+  {
+    version: "0.5.1",
+    date: "May 15, 2024",
+    type: "fix",
+    title: "Bug Fixes",
+    description: [
+      "Fixed namings and responsiveness of UI",
+      "Resolved some minor code bugs",
+    ],
+    icon: Hammer,
+  },
   {
     version: "0.5.0",
     date: "May 15, 2024",
@@ -93,9 +104,7 @@ export function ChangelogModal({ open, onOpenChange }: ChangelogModalProps) {
   const scrollToVersion = (version: string) => {
     const element = document.getElementById(`changelog-entry-${version}`);
     if (element && contentRef.current) {
-      // Find the offset relative to the scrollable container
       const offset = element.offsetTop - contentRef.current.offsetTop - 32;
-      console.log(offset, contentRef.current);
       contentRef.current.children[1].scrollTo({
         top: offset,
         behavior: "smooth",
@@ -108,7 +117,6 @@ export function ChangelogModal({ open, onOpenChange }: ChangelogModalProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl min-w-[80vw] bg-[#282828] border-none text-white p-0 overflow-hidden @container">
         <div className="grid @3xl:grid-cols-[300px_1fr] h-[80vh] max-h-[800px]">
-          {/* Sidebar */}
           <div className="hidden @3xl:block bg-black/20 p-6 border-r border-white/10">
             <h2 className="text-2xl font-bold text-[#1ED760] mb-4">Earworm</h2>
             <p className="text-white/60 mb-6">Changelog</p>
@@ -131,7 +139,6 @@ export function ChangelogModal({ open, onOpenChange }: ChangelogModalProps) {
               ))}
             </div>
           </div>
-          {/* Main Content */}
           <ScrollArea
             ref={contentRef as React.RefObject<HTMLDivElement>}
             className="p-6 @3xl:p-8 h-full max-h-[800px]"
