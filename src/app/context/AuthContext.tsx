@@ -13,6 +13,8 @@ import {
   isSessionExpired,
 } from "@/lib/spotify-auth";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useChangelog } from "@/hooks/use-changelog";
 
 interface AuthContextType {
   isLoading: boolean;
@@ -48,6 +50,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [allSessions, setAllSessions] = useState<AuthSession[]>([]);
   const [spotifyClient, setSpotifyClient] = useState<SpotifyApi | null>(null);
   const router = useRouter();
+  const { isNewVersion, currentVersion } = useChangelog();
+
+  // Show toast for new version
+  useEffect(() => {
+    if (isNewVersion) {
+      toast.info("New Version Available", {
+        description: `Earworm v${currentVersion} is now available!`,
+        action: {
+          label: "View Changelog",
+          onClick: () => {
+            // You might want to create a global method to open changelog
+            document.dispatchEvent(new CustomEvent("open-changelog"));
+          },
+        },
+        duration: 10000,
+      });
+    }
+  }, [isNewVersion, currentVersion]);
 
   // Initialize Spotify client when session changes
   useEffect(() => {

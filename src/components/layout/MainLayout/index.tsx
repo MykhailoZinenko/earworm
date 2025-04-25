@@ -1,7 +1,7 @@
 // src/components/layout/MainLayout/index.tsx
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { useIsMobile } from "@/hooks/use-responsive";
@@ -10,6 +10,7 @@ import { Sidebar } from "./Sidebar";
 import { MobileHeader } from "./MobileHeader";
 import { MobileNavBar } from "./MobileNavBar";
 import { ProfileDropdown } from "./ProfileDropdown";
+import { ChangelogModal } from "./ChangelogModal";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -19,6 +20,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   const pathname = usePathname();
   const { currentSession } = useAuth();
   const isMobile = useIsMobile();
+  const [isChangelogOpen, setIsChangelogOpen] = useState(false);
 
   const navItems = [
     {
@@ -35,41 +37,62 @@ export function MainLayout({ children }: MainLayoutProps) {
     },
   ];
 
+  // Add global event listener for opening changelog
+  useEffect(() => {
+    const openChangelog = () => {
+      setIsChangelogOpen(true);
+    };
+
+    document.addEventListener("open-changelog", openChangelog);
+
+    return () => {
+      document.removeEventListener("open-changelog", openChangelog);
+    };
+  }, []);
+
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground md:flex-row">
-      {/* Mobile Header */}
-      {isMobile && <MobileHeader navItems={navItems} />}
+    <>
+      <div className="flex flex-col h-screen bg-background text-foreground md:flex-row">
+        {/* Mobile Header */}
+        {isMobile && <MobileHeader navItems={navItems} />}
 
-      {/* Desktop Sidebar */}
-      {!isMobile && <Sidebar navItems={navItems} />}
+        {/* Desktop Sidebar */}
+        {!isMobile && <Sidebar navItems={navItems} />}
 
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#121212] md:ml-1 md:my-1 rounded-lg">
-        {/* Top bar */}
-        <header className="h-16 flex items-center justify-between px-4 md:px-6">
-          {/* Search bar */}
-          <div className="w-full md:w-3/5 relative">
-            <SearchInput />
-          </div>
-
-          {/* Profile - hidden on smaller screens, shown on medium+ */}
-          {!isMobile && currentSession && (
-            <div className="hidden md:flex items-center ml-4">
-              <ProfileDropdown user={currentSession.user} />
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col overflow-hidden bg-[#121212] md:ml-1 md:my-1 rounded-lg">
+          {/* Top bar */}
+          <header className="h-16 flex items-center justify-between px-4 md:px-6">
+            {/* Search bar */}
+            <div className="w-full md:w-3/5 relative">
+              <SearchInput />
             </div>
-          )}
-        </header>
 
-        {/* Page content */}
-        <main className="flex-1 overflow-auto bg-gradient-to-b from-[#1E1E1E] to-[#121212] rounded-t-2xl md:rounded-2xl pb-16 md:pb-0">
-          {children}
-        </main>
+            {/* Profile - hidden on smaller screens, shown on medium+ */}
+            {!isMobile && currentSession && (
+              <div className="hidden md:flex items-center ml-4">
+                <ProfileDropdown user={currentSession.user} />
+              </div>
+            )}
+          </header>
+
+          {/* Page content */}
+          <main className="flex-1 overflow-auto bg-gradient-to-b from-[#1E1E1E] to-[#121212] rounded-t-2xl md:rounded-2xl pb-16 md:pb-0">
+            {children}
+          </main>
+        </div>
+
+        {/* Mobile Navigation Bar */}
+        {isMobile && (
+          <MobileNavBar navItems={navItems} currentSession={currentSession} />
+        )}
       </div>
 
-      {/* Mobile Navigation Bar */}
-      {isMobile && (
-        <MobileNavBar navItems={navItems} currentSession={currentSession} />
-      )}
-    </div>
+      {/* Changelog Modal */}
+      <ChangelogModal
+        open={isChangelogOpen}
+        onOpenChange={setIsChangelogOpen}
+      />
+    </>
   );
 }

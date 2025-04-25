@@ -1,8 +1,7 @@
-// src/components/layout/MainLayout/Sidebar.tsx
-// Updated to use the NavLinks component
 import React from "react";
 import Link from "next/link";
 import { NavLinks } from "./NavLinks";
+import { ChangelogButton } from "./ChangelogButton";
 
 interface NavItem {
   icon: string;
@@ -42,6 +41,11 @@ export function Sidebar({ navItems }: SidebarProps) {
       <nav className="mt-4 px-2 flex-1 overflow-y-auto">
         <NavLinks navItems={navItems} />
       </nav>
+
+      {/* Changelog Button at the bottom */}
+      <div className="px-2 pb-4">
+        <ChangelogButton />
+      </div>
     </div>
   );
 }

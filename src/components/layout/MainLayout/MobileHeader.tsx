@@ -1,11 +1,11 @@
 // src/components/layout/MainLayout/MobileHeader.tsx
-// Updated to use NavLinks directly
 import React from "react";
 import Link from "next/link";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { NavLinks } from "./NavLinks";
+import { ChangelogButton } from "./ChangelogButton";
 
 interface MobileHeaderProps {
   navItems: Array<{
@@ -67,8 +67,11 @@ export function MobileHeader({ navItems }: MobileHeaderProps) {
           </div>
 
           {/* Nav links in mobile menu - not hidden */}
-          <nav className="mt-4 px-2">
+          <nav className="mt-4 px-2 space-y-1">
             <NavLinks navItems={navItems} />
+
+            {/* Add Changelog Button to mobile sheet */}
+            <ChangelogButton />
           </nav>
         </SheetContent>
       </Sheet>
