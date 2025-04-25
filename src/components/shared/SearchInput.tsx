@@ -1,3 +1,4 @@
+// src/components/shared/SearchInput.tsx
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -9,6 +10,7 @@ import { SpotifySearchResult, useSearch } from "@/app/context/SearchContext";
 import { useRouter } from "next/navigation";
 import { debounce } from "lodash";
 import { useClickAway } from "@/hooks/use-click-away";
+import { useIsMobile } from "@/hooks/use-responsive";
 
 export function SearchInput() {
   const {
@@ -28,6 +30,7 @@ export function SearchInput() {
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const isMobile = useIsMobile();
 
   useClickAway(dropdownRef, () => {
     setShowResults(false);
@@ -59,6 +62,7 @@ export function SearchInput() {
       setShowResults(isFocused);
     }
   };
+
   const handleFocus = () => {
     setIsFocused(true);
     setShowResults(true);
@@ -111,7 +115,10 @@ export function SearchInput() {
     const paddingHeight = 16;
     const calculatedHeight =
       headerHeight + itemHeight * itemCount + paddingHeight;
-    return Math.min(calculatedHeight, window.innerHeight * 0.7);
+    return Math.min(
+      calculatedHeight,
+      window.innerHeight * (isMobile ? 0.7 : 0.6)
+    );
   };
 
   useEffect(() => {
@@ -126,10 +133,10 @@ export function SearchInput() {
   ) => (
     <button
       key={`${isRecent ? "recent-" : ""}${result.type}-${result.id}`}
-      className="w-full px-4 py-2 flex items-center gap-3 hover:bg-[#3E3E3E] text-left"
+      className="w-full px-3 py-2 md:px-4 md:py-2 flex items-center gap-2 md:gap-3 hover:bg-[#3E3E3E] text-left"
       onClick={() => handleSelectResult(result)}
     >
-      <div className="flex-shrink-0 w-10 h-10 bg-[#333333] rounded overflow-hidden">
+      <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 bg-[#333333] rounded overflow-hidden">
         {result.imageUrl ? (
           <img
             src={result.imageUrl}
@@ -146,8 +153,10 @@ export function SearchInput() {
           </div>
         )}
       </div>
-      <div className="overflow-hidden">
-        <div className="text-white truncate">{result.name}</div>
+      <div className="overflow-hidden flex-1">
+        <div className="text-white truncate text-sm md:text-base">
+          {result.name}
+        </div>
         <div className="text-xs text-[#B3B3B3] flex items-center gap-1">
           {getIconForType(result.type)}
           <span className="capitalize">{result.type}</span>
@@ -167,11 +176,13 @@ export function SearchInput() {
         <Input
           ref={inputRef}
           type="text"
-          placeholder="What do you want to listen to?"
+          placeholder={
+            isMobile ? "Search..." : "What do you want to listen to?"
+          }
           value={query}
           onChange={handleInputChange}
           onFocus={handleFocus}
-          className="h-10 pl-10 pr-10 bg-[#242424] text-white border-none rounded-full focus-visible:ring-1 focus-visible:ring-white"
+          className="h-9 md:h-10 pl-10 pr-10 bg-[#242424] text-white border-none rounded-full focus-visible:ring-1 focus-visible:ring-white text-sm md:text-base"
         />
         {query && (
           <Button
@@ -186,7 +197,7 @@ export function SearchInput() {
       </div>
 
       {showResults && (
-        <div className="absolute mt-2 w-full bg-[#282828] rounded-md shadow-lg z-10">
+        <div className="absolute mt-2 w-full bg-[#282828] rounded-md shadow-lg z-10 max-h-[70vh] md:max-h-[60vh]">
           {isSearching ? (
             <div className="p-4 text-center text-[#B3B3B3]">Searching...</div>
           ) : query.trim() ? (

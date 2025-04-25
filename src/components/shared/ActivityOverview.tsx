@@ -1,4 +1,4 @@
-// src/components/dashboard/ActivityOverview.tsx
+// src/components/shared/ActivityOverview.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import Link from "next/link";
+import { useIsMobile } from "@/hooks/use-responsive";
 
 interface ActivityStats {
   recentTracks: {
@@ -39,6 +40,7 @@ export function ActivityOverview() {
   const { spotifyClient } = useAuth();
   const [stats, setStats] = useState<ActivityStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const fetchActivityData = async () => {
@@ -142,9 +144,9 @@ export function ActivityOverview() {
 
   if (isLoading) {
     return (
-      <div className="h-64 flex items-center justify-center bg-[#282828] rounded-lg">
+      <div className="h-48 md:h-64 flex items-center justify-center bg-[#282828] rounded-lg">
         <div className="flex flex-col items-center">
-          <div className="animate-pulse w-10 h-10 rounded-full bg-[#1ED760] mb-4"></div>
+          <div className="animate-pulse w-8 md:w-10 h-8 md:h-10 rounded-full bg-[#1ED760] mb-4"></div>
           <p className="text-[#B3B3B3]">Analyzing your music...</p>
         </div>
       </div>
@@ -153,7 +155,7 @@ export function ActivityOverview() {
 
   if (!stats) {
     return (
-      <div className="bg-[#282828] rounded-lg p-6 text-center">
+      <div className="bg-[#282828] rounded-lg p-4 md:p-6 text-center">
         <p className="text-[#B3B3B3]">
           No recent activity found. Start listening to see your stats!
         </p>
@@ -164,52 +166,61 @@ export function ActivityOverview() {
   const { recentTracks } = stats;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Your Recent Activity</h2>
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex justify-between items-center flex-wrap gap-2">
+        <h2 className="text-xl md:text-2xl font-bold">Your Recent Activity</h2>
         <Link
           href="/dashboard/insights"
           className="flex items-center text-sm text-[#1ED760] hover:underline"
         >
-          View detailed insights <ChevronRight className="h-4 w-4 ml-1" />
+          {isMobile ? "View insights" : "View detailed insights"}{" "}
+          <ChevronRight className="h-4 w-4 ml-1" />
         </Link>
       </div>
 
       {/* Scrollable Stats Cards Container */}
       <div className="relative">
         <ScrollArea className="pb-4 w-full">
-          <div className="flex space-x-4 w-max min-w-full">
-            <div className="bg-gradient-to-br from-[#3E3E3E] to-[#282828] p-5 rounded-lg flex items-center min-w-[240px]">
-              <div className="bg-[#1ED760] p-3 rounded-full mr-4">
-                <Headphones className="h-6 w-6 text-black" />
+          <div className="flex space-x-3 md:space-x-4 w-max min-w-full">
+            <div className="bg-gradient-to-br from-[#3E3E3E] to-[#282828] p-3 md:p-5 rounded-lg flex items-center min-w-[200px] md:min-w-[240px]">
+              <div className="bg-[#1ED760] p-2 md:p-3 rounded-full mr-3 md:mr-4">
+                <Headphones className="h-5 w-5 md:h-6 md:w-6 text-black" />
               </div>
               <div>
-                <p className="text-sm text-[#B3B3B3]">Tracks Played</p>
-                <p className="text-2xl font-bold">{recentTracks.count}</p>
+                <p className="text-xs md:text-sm text-[#B3B3B3]">
+                  Tracks Played
+                </p>
+                <p className="text-xl md:text-2xl font-bold">
+                  {recentTracks.count}
+                </p>
                 <p className="text-xs text-[#B3B3B3]">in the last 7 days</p>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-[#3E3E3E] to-[#282828] p-5 rounded-lg flex items-center min-w-[240px]">
-              <div className="bg-[#1DB954] p-3 rounded-full mr-4">
-                <Music className="h-6 w-6 text-black" />
+            <div className="bg-gradient-to-br from-[#3E3E3E] to-[#282828] p-3 md:p-5 rounded-lg flex items-center min-w-[200px] md:min-w-[240px]">
+              <div className="bg-[#1DB954] p-2 md:p-3 rounded-full mr-3 md:mr-4">
+                <Music className="h-5 w-5 md:h-6 md:w-6 text-black" />
               </div>
               <div>
-                <p className="text-sm text-[#B3B3B3]">Unique Artists</p>
-                <p className="text-2xl font-bold">
+                <p className="text-xs md:text-sm text-[#B3B3B3]">
+                  Unique Artists
+                </p>
+                <p className="text-xl md:text-2xl font-bold">
                   {recentTracks.uniqueArtists}
                 </p>
                 <p className="text-xs text-[#B3B3B3]">diverse listening</p>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-[#3E3E3E] to-[#282828] p-5 rounded-lg flex items-center min-w-[240px]">
-              <div className="bg-[#1AB34D] p-3 rounded-full mr-4">
-                <Calendar className="h-6 w-6 text-black" />
+            <div className="bg-gradient-to-br from-[#3E3E3E] to-[#282828] p-3 md:p-5 rounded-lg flex items-center min-w-[200px] md:min-w-[240px]">
+              <div className="bg-[#1AB34D] p-2 md:p-3 rounded-full mr-3 md:mr-4">
+                <Calendar className="h-5 w-5 md:h-6 md:w-6 text-black" />
               </div>
               <div>
-                <p className="text-sm text-[#B3B3B3]">Most Active Day</p>
-                <p className="text-xl font-bold">
+                <p className="text-xs md:text-sm text-[#B3B3B3]">
+                  Most Active Day
+                </p>
+                <p className="text-lg md:text-xl font-bold">
                   {recentTracks.mostActive.day}
                 </p>
                 <p className="text-xs text-[#B3B3B3]">
@@ -218,17 +229,17 @@ export function ActivityOverview() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-[#3E3E3E] to-[#282828] p-5 rounded-lg flex items-center min-w-[240px]">
-              <div className="bg-[#19A945] p-3 rounded-full mr-4">
-                <Disc className="h-6 w-6 text-black" />
+            <div className="bg-gradient-to-br from-[#3E3E3E] to-[#282828] p-3 md:p-5 rounded-lg flex items-center min-w-[200px] md:min-w-[240px]">
+              <div className="bg-[#19A945] p-2 md:p-3 rounded-full mr-3 md:mr-4">
+                <Disc className="h-5 w-5 md:h-6 md:w-6 text-black" />
               </div>
               <div>
-                <p className="text-sm text-[#B3B3B3]">Top Genre</p>
-                <p className="text-xl font-bold capitalize truncate max-w-[160px]">
+                <p className="text-xs md:text-sm text-[#B3B3B3]">Top Genre</p>
+                <p className="text-lg md:text-xl font-bold capitalize truncate max-w-[120px] md:max-w-[160px]">
                   {recentTracks.topGenres[0]?.replace(/-/g, " ")}
                 </p>
                 {recentTracks.topGenres.length > 1 && (
-                  <p className="text-xs text-[#B3B3B3] capitalize truncate max-w-[160px]">
+                  <p className="text-xs text-[#B3B3B3] capitalize truncate max-w-[120px] md:max-w-[160px]">
                     Also:{" "}
                     {recentTracks.topGenres
                       .slice(1, 3)
@@ -239,13 +250,15 @@ export function ActivityOverview() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-[#3E3E3E] to-[#282828] p-5 rounded-lg flex items-center min-w-[240px]">
-              <div className="bg-[#18A040] p-3 rounded-full mr-4">
-                <BarChart className="h-6 w-6 text-black" />
+            <div className="bg-gradient-to-br from-[#3E3E3E] to-[#282828] p-3 md:p-5 rounded-lg flex items-center min-w-[200px] md:min-w-[240px]">
+              <div className="bg-[#18A040] p-2 md:p-3 rounded-full mr-3 md:mr-4">
+                <BarChart className="h-5 w-5 md:h-6 md:w-6 text-black" />
               </div>
               <div>
-                <p className="text-sm text-[#B3B3B3]">Listening Pattern</p>
-                <p className="text-xl font-bold">
+                <p className="text-xs md:text-sm text-[#B3B3B3]">
+                  Listening Pattern
+                </p>
+                <p className="text-lg md:text-xl font-bold">
                   {recentTracks.count > 20
                     ? "Active"
                     : recentTracks.count > 10
@@ -261,42 +274,42 @@ export function ActivityOverview() {
       </div>
 
       {/* Recently Played Track Timeline */}
-      <div className="bg-[#282828] rounded-lg p-6">
-        <h3 className="text-xl font-semibold mb-4 flex items-center">
+      <div className="bg-[#282828] rounded-lg p-3 md:p-6">
+        <h3 className="text-lg md:text-xl font-semibold mb-3 md:mb-4 flex items-center">
           <Clock className="h-5 w-5 mr-2" />
           Recently Played
         </h3>
-        <div className="space-y-4">
+        <div className="space-y-3 md:space-y-4">
           {recentTracks.recentlyPlayed.map((track, index) => (
             <div
               key={index}
-              className="flex items-center bg-[#333333] p-3 rounded-md hover:bg-[#3a3a3a] transition-colors"
+              className="flex items-center bg-[#333333] p-2 md:p-3 rounded-md hover:bg-[#3a3a3a] transition-colors"
             >
               <div className="relative flex-shrink-0">
                 <img
                   src={track.imageUrl || "/placeholder.png"}
                   alt={track.name}
-                  className="w-12 h-12 rounded"
+                  className="w-10 h-10 md:w-12 md:h-12 rounded"
                 />
                 <div className="absolute -top-2 -right-2 bg-[#1ED760] text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                   {index + 1}
                 </div>
               </div>
-              <div className="flex-1 min-w-0 ml-4">
+              <div className="flex-1 min-w-0 ml-3 md:ml-4">
                 <Link
                   href={`/dashboard/track/${track.id}`}
-                  className="font-medium text-white truncate block hover:underline"
+                  className="font-medium text-white truncate block hover:underline text-sm md:text-base"
                 >
                   {track.name}
                 </Link>
                 <Link
                   href={`/dashboard/artist/${track.artistId}`}
-                  className="text-sm text-[#B3B3B3] hover:text-[#1ED760] truncate inline-block"
+                  className="text-xs md:text-sm text-[#B3B3B3] hover:text-[#1ED760] truncate inline-block"
                 >
                   {track.artist}
                 </Link>
               </div>
-              <div className="text-xs text-[#B3B3B3] ml-4 text-right whitespace-nowrap">
+              <div className="text-xs text-[#B3B3B3] ml-2 md:ml-4 text-right whitespace-nowrap">
                 {new Date(track.playedAt).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -310,7 +323,7 @@ export function ActivityOverview() {
             href="/dashboard/history"
             className="inline-flex items-center text-sm text-[#1ED760] hover:underline"
           >
-            View your full listening history
+            {isMobile ? "View history" : "View your full listening history"}
             <ChevronRight className="h-4 w-4 ml-1" />
           </Link>
         </div>

@@ -186,3 +186,55 @@ body {
 .border-spotify-green {
     border-color: #1ED760;
 }
+
+/* Add these to src/app/globals.css */
+
+/* Base Font Sizes */
+html {
+    font-size: 16px;
+}
+
+/* Adjust overall spacing for mobile */
+@media (max-width: 640px) {
+    html {
+        font-size: 14px;
+    }
+
+    .h1,
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    .h2,
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    /* Reduce padding in cards and containers */
+    .p-4 {
+        padding: 0.75rem;
+    }
+
+    .gap-4 {
+        gap: 0.75rem;
+    }
+}
+
+/* Add responsive utilities for touch devices */
+@media (hover: none) {
+
+    /* Increase touch targets for better mobile usability */
+    button,
+    .btn,
+    a,
+    [role="button"] {
+        min-height: 44px;
+    }
+
+    /* Make scrollable areas have momentum scrolling on touch devices */
+    .overflow-auto,
+    .overflow-y-auto,
+    .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+    }
+}
