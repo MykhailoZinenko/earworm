@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { storeUserSession, AuthSession } from "@/lib/spotify-auth";
 
-export default function AuthHandlerPage() {
+function AuthHandlerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -45,5 +45,13 @@ export default function AuthHandlerPage() {
         <p className="text-lg mb-4">Processing your login...</p>
       </div>
     </main>
+  );
+}
+
+export default function AuthHandlerPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AuthHandlerContent />
+    </Suspense>
   );
 }

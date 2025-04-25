@@ -1,13 +1,14 @@
+// src/app/context/AuthContext.tsx
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { SpotifyApi } from "@spotify/web-api-ts-sdk";
 import {
   AuthSession,
   getAllSessions,
   getCurrentSession,
   setCurrentSession,
   removeSession,
-  clearAllSessions,
   storeUserSession,
   isSessionExpired,
 } from "@/lib/spotify-auth";
@@ -17,6 +18,7 @@ interface AuthContextType {
   isLoading: boolean;
   currentSession: AuthSession | null;
   allSessions: AuthSession[];
+  spotifyClient: SpotifyApi | null;
   login: (forceNewAccount?: boolean) => void;
   loginWithSession: (userId: string) => void;
   logout: () => void;
@@ -27,6 +29,7 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   currentSession: null,
   allSessions: [],
+  spotifyClient: null,
   login: () => {},
   loginWithSession: () => {},
   logout: () => {},
@@ -41,7 +44,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     null
   );
   const [allSessions, setAllSessions] = useState<AuthSession[]>([]);
+  const [spotifyClient, setSpotifyClient] = useState<SpotifyApi | null>(null);
   const router = useRouter();
+
+  // Initialize Spotify client when session changes
+  useEffect(() => {
+    if (currentSession?.accessToken) {
+      try {
+        console.log(process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID);
+        // We don't need to provide client ID on the client side when using withAccessToken
+        const client = SpotifyApi.withAccessToken(
+          process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || "",
+          {
+            access_token: currentSession.accessToken,
+            token_type: "Bearer",
+            expires_in: Math.floor(
+              (currentSession.expiresAt - Date.now()) / 1000
+            ),
+            refresh_token: currentSession.refreshToken,
+          }
+        );
+        console.log("in auth context", client);
+        setSpotifyClient(client);
+        console.log("Spotify client initialized", client);
+      } catch (error) {
+        console.error("Error initializing Spotify client:", error);
+        setSpotifyClient(null);
+      }
+    } else {
+      setSpotifyClient(null);
+    }
+  }, [currentSession]);
 
   // Load sessions from localStorage on component mount
   useEffect(() => {
@@ -164,6 +197,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     if (currentSession) {
       setCurrentSessionState(null);
+      setSpotifyClient(null);
 
       // Clear current session ID from localStorage
       setCurrentSession("");
@@ -194,6 +228,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         currentSession,
         allSessions,
+        spotifyClient,
         login,
         loginWithSession,
         logout,

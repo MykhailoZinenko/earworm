@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Search, X, Clock, Music, User, Disc, ListMusic } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -33,11 +33,13 @@ export function SearchInput() {
     setShowResults(false);
   });
 
-  const debouncedSearch = useRef(
-    debounce((searchQuery: string) => {
-      performSearch(searchQuery);
-    }, 300)
-  ).current;
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((query: string) => {
+        performSearch(query);
+      }, 300),
+    [performSearch]
+  );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;

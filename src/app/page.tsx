@@ -1,11 +1,11 @@
 "use client";
 
+import { Suspense, useEffect } from "react";
 import { useAuth } from "./context/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
 import { LoginDropdown } from "@/components/shared/LoginDropdown";
 
-export default function Home() {
+function HomeContent() {
   const { currentSession, isLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -38,5 +38,13 @@ export default function Home() {
         <LoginDropdown />
       </div>
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
