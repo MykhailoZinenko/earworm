@@ -28,7 +28,7 @@ export default function Dashboard() {
 
       {/* Enhanced Top Items */}
       <div className="mb-6 md:mb-10">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-4 md:mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 sm:gap-0 mb-4 md:mb-6">
           <h2 className="text-xl md:text-2xl font-bold">Your Music</h2>
           <div className="flex flex-wrap gap-2 w-full px-3 sm:w-auto sm:px-0">
             <Badge
