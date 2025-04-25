@@ -258,7 +258,7 @@ export default function ArtistPage() {
   }
 
   return (
-    <div className="min-h-screen pb-20" style={themeStyle}>
+    <div className="min-h-screen pb-20 @container" style={themeStyle}>
       {/* Artist Header */}
       <ArtistHeader
         artist={artist}
@@ -337,7 +337,7 @@ export default function ArtistPage() {
 
             {/* User Listening Info */}
             {listenData.trackHistory && listenData.trackHistory.length > 0 && (
-              <section className="xl:w-[150%]">
+              <section>
                 <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
                   <span className="bg-[#1ED760] w-1 h-6 rounded-full inline-block"></span>
                   Your History with {artist.name}

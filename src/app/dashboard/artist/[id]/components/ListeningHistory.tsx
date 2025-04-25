@@ -207,9 +207,9 @@ export function ListeningHistory({
   const topTimeOfDay = timeDistribution[0];
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 min-[110rem]:grid-cols-3 gap-6">
       {/* Left: Recently played tracks */}
-      <div className="xl:col-span-2 p-5">
+      <div className="min-[110rem]:col-span-2 p-5">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <MusicIcon className="text-[#1ED760]" size={18} />
           Most Played Tracks
