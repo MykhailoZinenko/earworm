@@ -34,6 +34,8 @@ function AuthHandlerContent() {
         refreshAuthState();
 
         router.push("/dashboard");
+
+        console.log("Authentication processed successfully");
       } catch (error) {
         console.error("Error processing authentication:", error);
         router.push("/?error=auth_processing_failed");
@@ -41,7 +43,7 @@ function AuthHandlerContent() {
     };
 
     processAuth();
-  }, [router, searchParams, refreshAuthState]);
+  }, [router, searchParams]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
