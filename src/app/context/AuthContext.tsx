@@ -23,6 +23,7 @@ interface AuthContextType {
   loginWithSession: (userId: string) => void;
   logout: () => void;
   removeUserAccount: (userId: string) => void;
+  refreshAuthState: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -34,6 +35,7 @@ const AuthContext = createContext<AuthContextType>({
   loginWithSession: () => {},
   logout: () => {},
   removeUserAccount: () => {},
+  refreshAuthState: () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -51,8 +53,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (currentSession?.accessToken) {
       try {
-        console.log(process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID);
-        // We don't need to provide client ID on the client side when using withAccessToken
         const client = SpotifyApi.withAccessToken(
           process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || "",
           {
@@ -83,6 +83,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const current = getCurrentSession();
         const all = getAllSessions();
 
+        console.log("after callback", current);
+
         setCurrentSessionState(current);
         setAllSessions(all);
         setIsLoading(false);
@@ -94,6 +96,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initAuth();
   }, []);
+
+  const refreshAuthState = () => {
+    try {
+      const current = getCurrentSession();
+      const all = getAllSessions();
+
+      console.log("Auth refresh - current session:", current?.user?.id);
+
+      if (current) {
+        setCurrentSessionState(current);
+        setAllSessions(all);
+      }
+    } catch (error) {
+      console.error("Error refreshing auth state:", error);
+    }
+  };
 
   // Function to refresh an expired token
   const refreshToken = async (session: AuthSession) => {
@@ -233,6 +251,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loginWithSession,
         logout,
         removeUserAccount,
+        refreshAuthState,
       }}
     >
       {children}

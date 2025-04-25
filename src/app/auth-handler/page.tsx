@@ -1,16 +1,20 @@
+// Modify src/app/auth-handler/page.tsx
+
 "use client";
 
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { storeUserSession, AuthSession } from "@/lib/spotify-auth";
+import { useAuth } from "../context/AuthContext";
 
 function AuthHandlerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { refreshAuthState } = useAuth();
 
   useEffect(() => {
     // Process the authentication data
-    const processAuth = () => {
+    const processAuth = async () => {
       try {
         // Get the session data from URL parameters
         const sessionParam = searchParams.get("session");
@@ -27,7 +31,8 @@ function AuthHandlerContent() {
         // Store the session data
         storeUserSession(sessionData);
 
-        // Redirect to the dashboard
+        refreshAuthState();
+
         router.push("/dashboard");
       } catch (error) {
         console.error("Error processing authentication:", error);
@@ -36,7 +41,7 @@ function AuthHandlerContent() {
     };
 
     processAuth();
-  }, [router, searchParams]);
+  }, [router, searchParams, refreshAuthState]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
