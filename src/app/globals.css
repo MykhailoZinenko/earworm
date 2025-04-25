@@ -222,15 +222,6 @@ html {
 
 /* Add responsive utilities for touch devices */
 @media (hover: none) {
-
-    /* Increase touch targets for better mobile usability */
-    button,
-    .btn,
-    a,
-    [role="button"] {
-        min-height: 44px;
-    }
-
     /* Make scrollable areas have momentum scrolling on touch devices */
     .overflow-auto,
     .overflow-y-auto,
