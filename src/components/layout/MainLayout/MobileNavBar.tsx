@@ -67,9 +67,9 @@ export function MobileNavBar({ navItems, currentSession }: MobileNavBarProps) {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="flex flex-col items-center justify-center w-1/4 py-2 h-auto"
+                className="flex flex-col items-center justify-center w-1/4 py-2 px-0 h-auto gap-0"
               >
-                <Avatar className="h-7 w-7 border border-[#282828]">
+                <Avatar className="h-6 w-6 border border-[#282828]">
                   {currentSession.user.images &&
                   currentSession.user.images[0] ? (
                     <AvatarImage

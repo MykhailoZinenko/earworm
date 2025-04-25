@@ -87,6 +87,13 @@ export function TopItems({ timeRange = "short_term" }: TopItemsProps) {
           {/* Artists Tab Content */}
           <TabsContent value="artists" className="mt-0">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+              {/* Selected Artist Details - Mobile */}
+              <div className="lg:hidden mt-4">
+                {selectedArtist && (
+                  <ArtistDetail artist={selectedArtist} isMobile={true} />
+                )}
+              </div>
+
               {/* Artist Grid */}
               <div className="lg:col-span-2 h-[350px] md:h-[500px]">
                 <ScrollArea className="h-full pr-3">
@@ -104,13 +111,6 @@ export function TopItems({ timeRange = "short_term" }: TopItemsProps) {
               <div className="hidden lg:block">
                 {selectedArtist && (
                   <ArtistDetail artist={selectedArtist} isMobile={false} />
-                )}
-              </div>
-
-              {/* Selected Artist Details - Mobile */}
-              <div className="lg:hidden mt-4">
-                {selectedArtist && (
-                  <ArtistDetail artist={selectedArtist} isMobile={true} />
                 )}
               </div>
             </div>

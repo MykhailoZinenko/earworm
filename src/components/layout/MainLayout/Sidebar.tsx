@@ -1,8 +1,8 @@
 // src/components/layout/MainLayout/Sidebar.tsx
+// Updated to use the NavLinks component
 import React from "react";
 import Link from "next/link";
-import { Home, SearchCode } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { NavLinks } from "./NavLinks";
 
 interface NavItem {
   icon: string;
@@ -16,23 +16,6 @@ interface SidebarProps {
 }
 
 export function Sidebar({ navItems }: SidebarProps) {
-  // Function to render the appropriate icon
-  const renderIcon = (iconName: string, isActive: boolean) => {
-    const className = cn(
-      "h-6 w-6",
-      isActive ? "text-[#1ED760]" : "text-[#B3B3B3]"
-    );
-
-    switch (iconName) {
-      case "home":
-        return <Home className={className} />;
-      case "search":
-        return <SearchCode className={className} />;
-      default:
-        return <Home className={className} />;
-    }
-  };
-
   return (
     <div className="hidden md:flex md:w-60 md:flex-col bg-[#121212] h-screen">
       {/* Logo container */}
@@ -57,24 +40,7 @@ export function Sidebar({ navItems }: SidebarProps) {
       </div>
 
       <nav className="mt-4 px-2 flex-1 overflow-y-auto">
-        <ul className="space-y-1">
-          {navItems.map((item) => (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-4 px-4 py-3 rounded-md text-sm font-medium transition-colors cursor-pointer",
-                  item.active
-                    ? "text-[#1ED760]"
-                    : "text-[#B3B3B3] hover:text-white hover:bg-[#282828]"
-                )}
-              >
-                {renderIcon(item.icon, item.active)}
-                <span>{item.label}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <NavLinks navItems={navItems} />
       </nav>
     </div>
   );
