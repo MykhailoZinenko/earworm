@@ -172,9 +172,9 @@ export default function HistoryPage() {
         <Tabs
           value={selectedView}
           onValueChange={(v) => setSelectedView(v as typeof selectedView)}
-          className="mt-8"
+          className="mt-8 flex items-center md:items-start"
         >
-          <TabsList className="bg-[#282828] border-none">
+          <TabsList className="bg-[#282828] border-none w-full md:w-auto">
             <TabsTrigger
               value="timeline"
               className="data-[state=active]:bg-[#1ED760] data-[state=active]:text-black"
@@ -198,15 +198,15 @@ export default function HistoryPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="timeline" className="mt-6">
+          <TabsContent value="timeline" className="mt-6 w-full">
             <HistoryTimeline data={filteredData} />
           </TabsContent>
 
-          <TabsContent value="calendar" className="mt-6">
+          <TabsContent value="calendar" className="mt-6 w-full">
             <HistoryCalendar data={filteredData} />
           </TabsContent>
 
-          <TabsContent value="stats" className="mt-6">
+          <TabsContent value="stats" className="mt-6 w-full">
             <HistoryStats data={filteredData} />
           </TabsContent>
         </Tabs>

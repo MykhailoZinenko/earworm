@@ -20,7 +20,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, X, Filter, Search } from "lucide-react";
-import { format } from "date-fns";
+import { format, formatDate } from "@/lib/format-utils";
 import { cn } from "@/lib/utils";
 import { useClickAway } from "@/hooks/use-click-away";
 
@@ -183,72 +183,8 @@ export function HistoryFilters({
 
       {/* Expandable Filters Section */}
       {showFilters && (
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Date Range Filters */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Date Range</label>
-            <div className="flex flex-col gap-2">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !dateRange.start && "text-white/60"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateRange.start
-                      ? format(dateRange.start, "MMM d, yyyy")
-                      : "Start date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={dateRange.start}
-                    onSelect={(date) => {
-                      if (date) {
-                        date.setHours(0, 0, 0, 0);
-                      }
-                      onDateRangeChange({ ...dateRange, start: date });
-                    }}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !dateRange.end && "text-white/60"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateRange.end
-                      ? format(dateRange.end, "MMM d, yyyy")
-                      : "End date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={dateRange.end}
-                    onSelect={(date) => {
-                      if (date) {
-                        date.setHours(23, 59, 59, 999);
-                      }
-                      onDateRangeChange({ ...dateRange, end: date });
-                    }}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
 
           {/* Artist Filter */}
           <div className="space-y-2">
@@ -290,7 +226,6 @@ export function HistoryFilters({
             <div className="grid grid-cols-2 gap-2">
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => {
                   const today = new Date();
                   const start = new Date(today);
@@ -304,7 +239,6 @@ export function HistoryFilters({
               </Button>
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => {
                   const today = new Date();
                   const yesterday = new Date(today);
@@ -319,7 +253,6 @@ export function HistoryFilters({
               </Button>
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => {
                   const today = new Date();
                   const lastWeek = new Date(today);
@@ -333,7 +266,6 @@ export function HistoryFilters({
               </Button>
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => {
                   const today = new Date();
                   const lastMonth = new Date(today);

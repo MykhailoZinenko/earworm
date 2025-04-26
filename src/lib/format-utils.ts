@@ -57,3 +57,92 @@ export function formatDate(
     return new Intl.DateTimeFormat("en-US", options).format(date);
   }
 }
+
+export function format(date: Date, formatStr: string): string {
+  const pad = (num: number, size: number = 2): string => {
+    let s = num.toString();
+    while (s.length < size) s = "0" + s;
+    return s;
+  };
+
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hours24 = date.getHours();
+  const hours12 = hours24 % 12 || 12;
+  const minutes = date.getMinutes();
+  const seconds = date.getSeconds();
+  const ampm = hours24 >= 12 ? "PM" : "AM";
+
+  const dayNames = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  const dayNamesShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const monthNamesShort = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  const tokens: Record<string, string> = {
+    yyyy: year.toString(),
+    yy: year.toString().slice(-2),
+    MMMM: monthNames[month - 1],
+    MMM: monthNamesShort[month - 1],
+    MM: pad(month),
+    M: month.toString(),
+    dd: pad(day),
+    d: day.toString(),
+    EEEE: dayNames[date.getDay()],
+    EEE: dayNamesShort[date.getDay()],
+    HH: pad(hours24),
+    H: hours24.toString(),
+    hh: pad(hours12),
+    h: hours12.toString(),
+    mm: pad(minutes),
+    m: minutes.toString(),
+    ss: pad(seconds),
+    s: seconds.toString(),
+    aa: ampm,
+    a: ampm.toLowerCase(),
+  };
+
+  // Sort tokens by length (longest first) to avoid partial matches
+  const tokenRegex = new RegExp(
+    Object.keys(tokens)
+      .sort((a, b) => b.length - a.length)
+      .join("|"),
+    "g"
+  );
+
+  return formatStr.replace(tokenRegex, (match) => tokens[match] || match);
+}
