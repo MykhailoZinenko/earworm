@@ -127,7 +127,13 @@ export function ListeningInsights({
       {/* Main insight */}
       <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
         <div className="flex items-start gap-3">
-          <div className="bg-[#1ED760]/10 text-[#1ED760] rounded-full p-2 flex-shrink-0 mt-1">
+          <div
+            className="rounded-full p-2 flex-shrink-0 mt-1"
+            style={{
+              backgroundColor: `${dominantColor}20`,
+              color: dominantColor,
+            }}
+          >
             <Lightbulb size={18} />
           </div>
           <div>
@@ -139,7 +145,13 @@ export function ListeningInsights({
 
       {/* Fan persona */}
       <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm rounded-lg p-4">
-        <div className="bg-[#1ED760]/10 text-[#1ED760] rounded-full p-2 flex-shrink-0">
+        <div
+          className="rounded-full p-2 flex-shrink-0"
+          style={{
+            backgroundColor: `${dominantColor}20`,
+            color: dominantColor,
+          }}
+        >
           <Star size={18} />
         </div>
         <div>
@@ -159,7 +171,13 @@ export function ListeningInsights({
         <div className="grid grid-cols-1 gap-3">
           {/* Total listen time */}
           <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm rounded-lg p-3">
-            <div className="bg-[#1ED760]/10 text-[#1ED760] rounded-full p-2 flex-shrink-0">
+            <div
+              className="rounded-full p-2 flex-shrink-0"
+              style={{
+                backgroundColor: `${dominantColor}20`,
+                color: dominantColor,
+              }}
+            >
               <Clock size={16} />
             </div>
             <div className="flex-1">
@@ -177,13 +195,21 @@ export function ListeningInsights({
           {listenData.listenTrend && (
             <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm rounded-lg p-3">
               <div
-                className={`${
-                  listenData.listenTrend === "rising"
-                    ? "bg-[#1ED760]/10 text-[#1ED760]"
-                    : listenData.listenTrend === "falling"
-                    ? "bg-[#FF5722]/10 text-[#FF5722]"
-                    : "bg-white/10 text-white/60"
-                } rounded-full p-2 flex-shrink-0`}
+                className={`rounded-full p-2 flex-shrink-0`}
+                style={{
+                  backgroundColor:
+                    listenData.listenTrend === "rising"
+                      ? `${dominantColor}20`
+                      : listenData.listenTrend === "falling"
+                      ? "#FF572220"
+                      : "rgba(255,255,255,0.1)",
+                  color:
+                    listenData.listenTrend === "rising"
+                      ? dominantColor
+                      : listenData.listenTrend === "falling"
+                      ? "#FF5722"
+                      : "rgba(255,255,255,0.6)",
+                }}
               >
                 {listenData.listenTrend === "rising" ? (
                   <TrendingUp size={16} />
@@ -212,7 +238,13 @@ export function ListeningInsights({
           {/* Ranking */}
           {listenData.rankInTopArtists && (
             <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm rounded-lg p-3">
-              <div className="bg-[#1ED760]/10 text-[#1ED760] rounded-full p-2 flex-shrink-0">
+              <div
+                className="rounded-full p-2 flex-shrink-0"
+                style={{
+                  backgroundColor: `${dominantColor}20`,
+                  color: dominantColor,
+                }}
+              >
                 <Award size={16} />
               </div>
               <div className="flex-1">

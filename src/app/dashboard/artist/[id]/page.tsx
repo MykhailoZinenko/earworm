@@ -4,7 +4,11 @@ import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { Artist, Track, SimplifiedAlbum } from "@spotify/web-api-ts-sdk";
-import { ArtistSimilarityScore } from "@/lib/artist-recommendation";
+import {
+  ArtistSimilarityScore,
+  findRelatedArtists,
+} from "@/lib/artist-recommendation";
+import { extractColors } from "@/lib/color-utils";
 import { ArtistHeader } from "./components/ArtistHeader";
 import { TopTracks } from "./components/TopTracks";
 import { ArtistAlbums } from "./components/ArtistAlbums";
@@ -54,7 +58,7 @@ export default function ArtistPage() {
       played_at: string;
     }[]
   >([]);
-  const [dominantColor, setDominantColor] = useState<string>("#121212");
+  const [dominantColor, setDominantColor] = useState<string>("#1ED760"); // Default to Spotify green
   const [textColor, setTextColor] = useState<string>("#FFFFFF");
   const [isFollowing, setIsFollowing] = useState(false);
   const [listenData, setListenData] = useState<ListenData>({
@@ -66,15 +70,54 @@ export default function ArtistPage() {
 
   // Extract colors from artist image to create a cohesive theme
   useEffect(() => {
-    if (artist?.images && artist.images.length > 0) {
-      const dominantColor = getVibrantColorFromImage(artist.images[0].url);
-      setDominantColor(dominantColor || "#121212");
+    const extractThemeColors = async () => {
+      if (artist?.images && artist.images.length > 0) {
+        try {
+          const { dominant, isLight } = await extractColors(
+            artist.images[0].url
+          );
 
-      // Set text color based on brightness of dominant color
-      const isLight = getBrightness(dominantColor || "#121212") > 180;
-      setTextColor(isLight ? "#121212" : "#FFFFFF");
-    }
+          // Additional contrast check - ensure the color is bright enough
+          const brightenedColor = ensureMinimumBrightness(dominant);
+
+          setDominantColor(brightenedColor);
+          setTextColor(isLight ? "#121212" : "#FFFFFF");
+        } catch (error) {
+          console.error("Error extracting colors:", error);
+          // Fallback to bright Spotify green if color extraction fails
+          setDominantColor("#1ED760");
+          setTextColor("#FFFFFF");
+        }
+      }
+    };
+
+    extractThemeColors();
   }, [artist]);
+
+  // Ensure minimum brightness for the dominant color
+  const ensureMinimumBrightness = (color: string): string => {
+    // Convert hex to RGB
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+
+    // Calculate brightness
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+
+    // If brightness is too low, increase it
+    if (brightness < 128) {
+      const factor = 128 / brightness;
+      const newR = Math.min(255, Math.round(r * factor));
+      const newG = Math.min(255, Math.round(g * factor));
+      const newB = Math.min(255, Math.round(b * factor));
+
+      return `#${newR.toString(16).padStart(2, "0")}${newG
+        .toString(16)
+        .padStart(2, "0")}${newB.toString(16).padStart(2, "0")}`;
+    }
+
+    return color;
+  };
 
   // CSS variables for dynamic theming based on artist colors
   const themeStyle = useMemo(() => {
@@ -82,6 +125,12 @@ export default function ArtistPage() {
       "--artist-primary": dominantColor,
       "--artist-text": textColor,
       "--artist-secondary": adjustColorBrightness(dominantColor, -30),
+      "--artist-tertiary": adjustColorOpacity(dominantColor, 0.1),
+      "--artist-accent": adjustColorBrightness(dominantColor, 20),
+      "--artist-hover": adjustColorOpacity(dominantColor, 0.2),
+      "--artist-progress": dominantColor,
+      "--artist-gradient-start": adjustColorOpacity(dominantColor, 0.2),
+      "--artist-gradient-end": adjustColorOpacity(dominantColor, 0.05),
     } as React.CSSProperties;
   }, [dominantColor, textColor]);
 
@@ -114,8 +163,37 @@ export default function ArtistPage() {
           spotifyClient.currentUser.topItems("tracks", "short_term", 50),
           spotifyClient.currentUser.topItems("tracks", "medium_term", 50),
           spotifyClient.currentUser.topItems("tracks", "long_term", 50),
-          spotifyClient.currentUser.topItems("artists", "medium_term", 50),
+          spotifyClient.currentUser.topItems("artists", "short_term", 50),
         ]);
+
+        // Check if the artist appears in user's top artists list
+        let artistRank: number | null = null;
+
+        // First check in the initial top 50 artists
+        const artistIndex = userTopArtistsData.items.findIndex(
+          (topArtist) => topArtist.id === id
+        );
+
+        if (artistIndex !== -1) {
+          artistRank = artistIndex + 1;
+        } else {
+          // If not found in top 50, check the next 50
+          const nextTopArtists = await spotifyClient.currentUser.topItems(
+            "artists",
+            "short_term",
+            50,
+            50 // offset
+          );
+
+          const nextArtistIndex = nextTopArtists.items.findIndex(
+            (topArtist) => topArtist.id === id
+          );
+
+          if (nextArtistIndex !== -1) {
+            artistRank = 50 + nextArtistIndex + 1;
+          }
+          // If still not found, artistRank remains null
+        }
 
         setArtist(artistData);
         setTopTracks(topTracksData.tracks);
@@ -147,16 +225,11 @@ export default function ArtistPage() {
           userTopTracksMediumTerm.items,
           userTopTracksLongTerm.items,
           recentlyPlayedData.items,
-          artistRecentlyPlayed
+          artistRecentlyPlayed,
+          artistRank // Pass the actual artist rank
         );
 
         setListenData(listenInfo);
-
-        // Import and use our custom artist recommendation algorithm
-        // since the Spotify related artists endpoint is deprecated
-        const { findRelatedArtists } = await import(
-          "@/lib/artist-recommendation"
-        );
 
         // Use our algorithm to find similar artists
         const similarArtistsResults = await findRelatedArtists(
@@ -211,8 +284,6 @@ export default function ArtistPage() {
   };
 
   // Share artist
-  // Share artist
-  // Copy link to clipboard (desktop-focused)
   const handleShare = () => {
     if (!artist) return;
 
@@ -259,6 +330,14 @@ export default function ArtistPage() {
 
   return (
     <div className="min-h-screen pb-20 @container" style={themeStyle}>
+      {/* Gradient overlay using the dominant color */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-20 z-0"
+        style={{
+          background: `radial-gradient(circle at top, ${dominantColor}30 0%, transparent 50%)`,
+        }}
+      />
+
       {/* Artist Header */}
       <ArtistHeader
         artist={artist}
@@ -271,14 +350,17 @@ export default function ArtistPage() {
       />
 
       {/* Main Content */}
-      <div className="px-4 md:px-8 xl:px-12 mt-4 md:mt-8">
+      <div className="px-4 md:px-8 xl:px-12 mt-4 md:mt-8 relative z-10">
         <div className="grid grid-cols-1 2xl:grid-cols-3 gap-6">
           {/* Left Column */}
           <div className="xl:col-span-2 space-y-8">
             {/* Top Tracks */}
             <section>
               <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                <span className="bg-[#1ED760] w-1 h-6 rounded-full inline-block"></span>
+                <span
+                  className="w-1 h-6 rounded-full inline-block transition-colors"
+                  style={{ backgroundColor: dominantColor }}
+                ></span>
                 Top Songs
               </h2>
               <TopTracks
@@ -291,7 +373,10 @@ export default function ArtistPage() {
             {/* Discography */}
             <section>
               <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <span className="bg-[#1ED760] w-1 h-6 rounded-full inline-block"></span>
+                <span
+                  className="w-1 h-6 rounded-full inline-block transition-colors"
+                  style={{ backgroundColor: dominantColor }}
+                ></span>
                 Discography
               </h2>
 
@@ -299,20 +384,20 @@ export default function ArtistPage() {
                 <TabsList className="mb-4 bg-black/20 backdrop-blur-sm w-full justify-start border-b border-white/10 rounded-none p-0 h-auto">
                   <TabsTrigger
                     value="albums"
-                    className="rounded-t-lg rounded-b-none border-b-2 border-transparent data-[state=active]:border-[#1ED760] data-[state=active]:bg-transparent py-3 text-sm"
+                    className="rounded-t-lg rounded-b-none border-b-2 border-transparent data-[state=active]:border-[var(--artist-primary)] data-[state=active]:bg-transparent py-3 text-sm"
                   >
                     Albums ({albums.length})
                   </TabsTrigger>
                   <TabsTrigger
                     value="singles"
-                    className="rounded-t-lg rounded-b-none border-b-2 border-transparent data-[state=active]:border-[#1ED760] data-[state=active]:bg-transparent py-3 text-sm"
+                    className="rounded-t-lg rounded-b-none border-b-2 border-transparent data-[state=active]:border-[var(--artist-primary)] data-[state=active]:bg-transparent py-3 text-sm"
                   >
                     Singles & EPs ({singles.length})
                   </TabsTrigger>
                   {compilations.length > 0 && (
                     <TabsTrigger
                       value="compilations"
-                      className="rounded-t-lg rounded-b-none border-b-2 border-transparent data-[state=active]:border-[#1ED760] data-[state=active]:bg-transparent py-3 text-sm"
+                      className="rounded-t-lg rounded-b-none border-b-2 border-transparent data-[state=active]:border-[var(--artist-primary)] data-[state=active]:bg-transparent py-3 text-sm"
                     >
                       Compilations ({compilations.length})
                     </TabsTrigger>
@@ -320,16 +405,22 @@ export default function ArtistPage() {
                 </TabsList>
 
                 <TabsContent value="albums">
-                  <ArtistAlbums albums={albums} />
+                  <ArtistAlbums albums={albums} dominantColor={dominantColor} />
                 </TabsContent>
 
                 <TabsContent value="singles">
-                  <ArtistAlbums albums={singles} />
+                  <ArtistAlbums
+                    albums={singles}
+                    dominantColor={dominantColor}
+                  />
                 </TabsContent>
 
                 {compilations.length > 0 && (
                   <TabsContent value="compilations">
-                    <ArtistAlbums albums={compilations} />
+                    <ArtistAlbums
+                      albums={compilations}
+                      dominantColor={dominantColor}
+                    />
                   </TabsContent>
                 )}
               </Tabs>
@@ -339,7 +430,10 @@ export default function ArtistPage() {
             {listenData.trackHistory && listenData.trackHistory.length > 0 && (
               <section>
                 <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                  <span className="bg-[#1ED760] w-1 h-6 rounded-full inline-block"></span>
+                  <span
+                    className="w-1 h-6 rounded-full inline-block transition-colors"
+                    style={{ backgroundColor: dominantColor }}
+                  ></span>
                   Your History with {artist.name}
                 </h2>
                 <ListeningHistory
@@ -354,7 +448,16 @@ export default function ArtistPage() {
           {/* Right Column - Stats & Related */}
           <div className="space-y-8 xl:col-span-2 2xl:col-span-1">
             {/* Artist Stats */}
-            <section className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
+            <section
+              className="rounded-xl p-6"
+              style={{
+                background: `linear-gradient(135deg, ${adjustColorOpacity(
+                  dominantColor,
+                  0.1
+                )}, ${adjustColorOpacity(dominantColor, 0.05)})`,
+                backdropFilter: "blur(10px)",
+              }}
+            >
               <h2 className="text-xl font-bold mb-4">Artist Stats</h2>
               <ArtistStats
                 artist={artist}
@@ -365,7 +468,16 @@ export default function ArtistPage() {
 
             {/* Listening Insights */}
             {listenData.rankInTopArtists && (
-              <section className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
+              <section
+                className="rounded-xl p-6"
+                style={{
+                  background: `linear-gradient(135deg, ${adjustColorOpacity(
+                    dominantColor,
+                    0.1
+                  )}, ${adjustColorOpacity(dominantColor, 0.05)})`,
+                  backdropFilter: "blur(10px)",
+                }}
+              >
                 <h2 className="text-xl font-bold mb-4">
                   Your Listening Insights
                 </h2>
@@ -378,9 +490,21 @@ export default function ArtistPage() {
             )}
 
             {/* Similar Artists */}
-            <section className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
+            <section
+              className="rounded-xl p-6"
+              style={{
+                background: `linear-gradient(135deg, ${adjustColorOpacity(
+                  dominantColor,
+                  0.1
+                )}, ${adjustColorOpacity(dominantColor, 0.05)})`,
+                backdropFilter: "blur(10px)",
+              }}
+            >
               <h2 className="text-xl font-bold mb-4">Similar Artists</h2>
-              <RelatedArtists similarArtists={relatedArtistsWithScores} />
+              <RelatedArtists
+                similarArtists={relatedArtistsWithScores}
+                dominantColor={dominantColor}
+              />
             </section>
           </div>
         </div>
@@ -396,11 +520,11 @@ function calculateListenData(
   topTracksMedium: Track[],
   topTracksLong: Track[],
   allRecentlyPlayed: { track: Track; played_at: string }[],
-  artistRecentlyPlayed: { track: Track; played_at: string }[]
+  artistRecentlyPlayed: { track: Track; played_at: string }[],
+  artistRank: number | null // Pass the actual rank from top artists
 ): ListenData {
   let favoriteTrackId: string | undefined;
   let totalListensMs = 0;
-  let rankInTopArtists: number | null = null;
   let listenTrend: "rising" | "falling" | "steady" = "steady";
 
   // Find artist tracks in user's top tracks across all time ranges
@@ -417,7 +541,6 @@ function calculateListenData(
   );
 
   // Create comprehensive track history by combining recently played and top tracks
-  // This gives us a better picture than just using recently played
   const trackHistory: TrackHistoryItem[] = [
     // Include recently played tracks with actual timestamps
     ...artistRecentlyPlayed.map((item) => ({
@@ -428,7 +551,6 @@ function calculateListenData(
 
     // Include short term top tracks
     ...artistInShortTerm
-      // Avoid duplicates that are already in recently played
       .filter(
         (track) =>
           !artistRecentlyPlayed.some((item) => item.track.id === track.id)
@@ -440,7 +562,6 @@ function calculateListenData(
 
     // Include medium term top tracks
     ...artistInMediumTerm
-      // Avoid duplicates that are already in short term or recently played
       .filter(
         (track) =>
           !artistInShortTerm.some((t) => t.id === track.id) &&
@@ -453,7 +574,6 @@ function calculateListenData(
 
     // Include long term top tracks
     ...artistInLongTerm
-      // Avoid duplicates
       .filter(
         (track) =>
           !artistInShortTerm.some((t) => t.id === track.id) &&
@@ -495,7 +615,6 @@ function calculateListenData(
   totalListensMs += calculateApproximatePlaytime(artistInLongTerm);
 
   // Determine favorite track using combined history
-  // First create a map of track IDs to play count
   const trackCounts: Record<string, { count: number; track: Track }> = {};
 
   // Count occurrences with weighting based on source
@@ -544,32 +663,8 @@ function calculateListenData(
     (a, b) => b[1] - a[1]
   )[0]?.[0];
 
-  // Find rank in top artists
-  if (artistInShortTerm.length > 0) {
-    // Extract unique artists from short term top tracks
-    const uniqueArtists = new Map();
-
-    topTracksShort.forEach((track) => {
-      track.artists.forEach((artist) => {
-        const currentCount = uniqueArtists.get(artist.id) || 0;
-        uniqueArtists.set(artist.id, currentCount + 1);
-      });
-    });
-
-    // Sort artists by track count
-    const sortedArtists = Array.from(uniqueArtists.entries()).sort(
-      (a, b) => b[1] - a[1]
-    );
-
-    // Find this artist's rank
-    const artistRank = sortedArtists.findIndex(([id]) => id === artistId);
-    if (artistRank !== -1) {
-      rankInTopArtists = artistRank + 1;
-    }
-  }
-
   return {
-    rankInTopArtists,
+    rankInTopArtists: artistRank, // Use the actual rank from top artists
     totalListensMs,
     listenTrend,
     topTimeOfDay,
@@ -588,48 +683,6 @@ function calculateApproximatePlaytime(tracks: Track[]): number {
   );
 }
 
-// Get a vibrant color from an image (placeholder implementation)
-function getVibrantColorFromImage(imageUrl: string): string {
-  // In a real app, we'd use a library like Vibrant.js
-  // For this implementation, we'll return a color based on the image URL hash
-  const hash = imageUrl.split("").reduce((acc, char) => {
-    return acc + char.charCodeAt(0);
-  }, 0);
-
-  // Generate a hue between 0-360
-  const hue = hash % 360;
-
-  // Create a vibrant HSL color
-  return `hsl(${hue}, 70%, 30%)`;
-}
-
-// Get brightness of a color (0-255)
-function getBrightness(color: string): number {
-  // For HSL colors
-  if (color.startsWith("hsl")) {
-    const match = color.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
-    if (match) {
-      const l = parseInt(match[3]);
-
-      // Lightness directly correlates to brightness in HSL
-      return l * 2.55; // Convert 0-100 to 0-255
-    }
-  }
-
-  // For hex colors (simplified)
-  if (color.startsWith("#")) {
-    const hex = color.substring(1);
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-
-    // Perceived brightness formula
-    return r * 0.299 + g * 0.587 + b * 0.114;
-  }
-
-  return 127; // Default middle brightness
-}
-
 // Adjust color brightness
 function adjustColorBrightness(color: string, amount: number): string {
   if (color.startsWith("hsl")) {
@@ -641,6 +694,42 @@ function adjustColorBrightness(color: string, amount: number): string {
 
       return `hsl(${h}, ${s}%, ${Math.max(0, Math.min(100, l + amount))}%)`;
     }
+  }
+
+  // If it's a hex color
+  if (color.startsWith("#")) {
+    let hex = color.substring(1);
+    let r = parseInt(hex.substring(0, 2), 16);
+    let g = parseInt(hex.substring(2, 4), 16);
+    let b = parseInt(hex.substring(4, 6), 16);
+
+    r = Math.max(0, Math.min(255, r + amount));
+    g = Math.max(0, Math.min(255, g + amount));
+    b = Math.max(0, Math.min(255, b + amount));
+
+    return `#${r.toString(16).padStart(2, "0")}${g
+      .toString(16)
+      .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+  }
+
+  return color;
+}
+
+// Adjust color opacity
+function adjustColorOpacity(color: string, opacity: number): string {
+  // If it's a hex color
+  if (color.startsWith("#")) {
+    let hex = color.substring(1);
+    let r = parseInt(hex.substring(0, 2), 16);
+    let g = parseInt(hex.substring(2, 4), 16);
+    let b = parseInt(hex.substring(4, 6), 16);
+
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+
+  // If it's an HSL color
+  if (color.startsWith("hsl")) {
+    return color.replace(")", `, ${opacity})`).replace("hsl", "hsla");
   }
 
   return color;

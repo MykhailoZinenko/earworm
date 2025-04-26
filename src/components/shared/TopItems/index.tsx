@@ -86,16 +86,16 @@ export function TopItems({ timeRange = "short_term" }: TopItemsProps) {
 
           {/* Artists Tab Content */}
           <TabsContent value="artists" className="mt-0">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
               {/* Selected Artist Details - Mobile */}
-              <div className="lg:hidden mt-4">
+              <div className="xl:hidden mt-4">
                 {selectedArtist && (
                   <ArtistDetail artist={selectedArtist} isMobile={true} />
                 )}
               </div>
 
               {/* Artist Grid */}
-              <div className="lg:col-span-2 h-[350px] md:h-[500px]">
+              <div className="xl:col-span-2 h-[350px] xl:h-[500px]">
                 <ScrollArea className="h-full pr-3">
                   <ArtistGrid
                     artists={topArtists}
@@ -108,7 +108,7 @@ export function TopItems({ timeRange = "short_term" }: TopItemsProps) {
               </div>
 
               {/* Selected Artist Details - Desktop */}
-              <div className="hidden lg:block">
+              <div className="hidden xl:block">
                 {selectedArtist && (
                   <ArtistDetail artist={selectedArtist} isMobile={false} />
                 )}
@@ -117,8 +117,8 @@ export function TopItems({ timeRange = "short_term" }: TopItemsProps) {
           </TabsContent>
 
           {/* Tracks Tab Content */}
-          <TabsContent value="tracks" className="mt-0 space-y-4 md:space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <TabsContent value="tracks" className="mt-0 space-y-4 xl:space-y-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 xl:gap-6">
               {topTracks.slice(0, 2).map((track, index) => (
                 <FeatureTrackCard
                   key={track.id}
@@ -131,7 +131,7 @@ export function TopItems({ timeRange = "short_term" }: TopItemsProps) {
             </div>
 
             {/* Track List - Desktop */}
-            <div className="hidden md:block bg-[#121212] rounded-xl overflow-hidden">
+            <div className="hidden xl:block bg-[#121212] rounded-xl overflow-hidden">
               <TrackList
                 tracks={topTracks.slice(2)}
                 startIndex={2}
@@ -141,7 +141,7 @@ export function TopItems({ timeRange = "short_term" }: TopItemsProps) {
             </div>
 
             {/* Track List - Mobile */}
-            <div className="md:hidden space-y-3">
+            <div className="xl:hidden space-y-3">
               <TrackListMobile
                 tracks={topTracks.slice(2)}
                 startIndex={2}

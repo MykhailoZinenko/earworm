@@ -8,9 +8,13 @@ import { Badge } from "@/components/ui/badge";
 
 interface ArtistAlbumsProps {
   albums: SimplifiedAlbum[];
+  dominantColor?: string;
 }
 
-export function ArtistAlbums({ albums }: ArtistAlbumsProps) {
+export function ArtistAlbums({
+  albums,
+  dominantColor = "#1ED760",
+}: ArtistAlbumsProps) {
   // Sort albums by release date (newest first)
   const sortedAlbums = [...albums].sort((a, b) => {
     const dateA = new Date(a.release_date);
@@ -67,7 +71,7 @@ export function ArtistAlbums({ albums }: ArtistAlbumsProps) {
       {years.map((year) => (
         <div key={year} className="space-y-4">
           <h3 className="font-semibold text-white/70 flex items-center gap-2">
-            <Calendar size={18} />
+            <Calendar size={18} style={{ color: dominantColor }} />
             {year}
           </h3>
 
@@ -91,20 +95,24 @@ export function ArtistAlbums({ albums }: ArtistAlbumsProps) {
                       </div>
                     )}
 
-                    {/* Play button overlay */}
+                    {/* Play button overlay with dominant color */}
                     <div
                       className={`absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
                     >
                       <Button
                         size="icon"
-                        className="w-12 h-12 rounded-full bg-[#1ED760] text-black hover:bg-[#1ED760]/90 hover:scale-105 transition-transform"
+                        className="w-12 h-12 rounded-full text-black hover:scale-105 transition-transform"
+                        style={{ backgroundColor: dominantColor }}
                       >
                         <Play size={24} className="fill-black ml-1" />
                       </Button>
                     </div>
 
-                    {/* Release year/date badge */}
-                    <Badge className="absolute bottom-2 left-2 bg-black/60 text-white border-none text-xs">
+                    {/* Release year/date badge with dominant color */}
+                    <Badge
+                      className="absolute bottom-2 left-2 text-white border-none text-xs"
+                      style={{ backgroundColor: `${dominantColor}66` }}
+                    >
                       {formatReleaseDate(album.release_date)}
                     </Badge>
                   </div>

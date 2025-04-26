@@ -16,9 +16,13 @@ import { ArtistSimilarityScore } from "@/lib/artist-recommendation";
 
 interface RelatedArtistsProps {
   similarArtists: ArtistSimilarityScore[];
+  dominantColor?: string;
 }
 
-export function RelatedArtists({ similarArtists }: RelatedArtistsProps) {
+export function RelatedArtists({
+  similarArtists,
+  dominantColor = "#1ED760",
+}: RelatedArtistsProps) {
   const [hoveredArtistId, setHoveredArtistId] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
 
@@ -27,14 +31,16 @@ export function RelatedArtists({ similarArtists }: RelatedArtistsProps) {
     ? similarArtists
     : similarArtists.slice(0, 10);
 
-  // Get match strength label based on similarity score
+  // Get match strength label based on similarity score with dominant color
   const getMatchStrength = (score: number) => {
-    if (score >= 200)
-      return { label: "Perfect Match", color: "text-[#1ED760]" };
-    if (score >= 150) return { label: "Strong Match", color: "text-[#1DB954]" };
-    if (score >= 100) return { label: "Good Match", color: "text-[#4CAF50]" };
-    if (score >= 70) return { label: "Decent Match", color: "text-[#8BC34A]" };
-    return { label: "Mild Match", color: "text-[#CDDC39]" };
+    if (score >= 200) return { label: "Perfect Match", color: dominantColor };
+    if (score >= 150)
+      return { label: "Strong Match", color: `${dominantColor}dd` };
+    if (score >= 100)
+      return { label: "Good Match", color: `${dominantColor}bb` };
+    if (score >= 70)
+      return { label: "Decent Match", color: `${dominantColor}99` };
+    return { label: "Mild Match", color: `${dominantColor}77` };
   };
 
   return (
@@ -66,12 +72,13 @@ export function RelatedArtists({ similarArtists }: RelatedArtistsProps) {
                     )}
                   </div>
 
-                  {/* Play button overlay */}
+                  {/* Play button overlay with dominant color */}
                   {hoveredArtistId === artist.id && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full">
                       <Button
                         size="icon"
-                        className="w-7 h-7 rounded-full bg-[#1ED760] hover:bg-[#1ED760]/90 p-0"
+                        className="w-7 h-7 rounded-full hover:scale-110 p-0 transition-transform"
+                        style={{ backgroundColor: dominantColor }}
                       >
                         <Play size={14} className="fill-black ml-px" />
                       </Button>
@@ -86,12 +93,13 @@ export function RelatedArtists({ similarArtists }: RelatedArtistsProps) {
                       {artist.name}
                     </h4>
 
-                    {/* Match strength indicator */}
+                    {/* Match strength indicator with dynamic color */}
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div
-                            className={`flex items-center text-xs ${matchStrength.color}`}
+                            className={`flex items-center text-xs`}
+                            style={{ color: matchStrength.color }}
                           >
                             <BadgeCheck size={14} className="mr-0.5" />
                             <span className="hidden sm:inline">
@@ -107,7 +115,10 @@ export function RelatedArtists({ similarArtists }: RelatedArtistsProps) {
                             <ul className="text-xs space-y-1">
                               {matchReasons.map((reason, idx) => (
                                 <li key={idx} className="flex items-center">
-                                  <span className="w-1.5 h-1.5 bg-[#1ED760] rounded-full mr-1.5"></span>
+                                  <span
+                                    className="w-1.5 h-1.5 rounded-full mr-1.5"
+                                    style={{ backgroundColor: dominantColor }}
+                                  ></span>
                                   {reason}
                                 </li>
                               ))}
@@ -119,11 +130,12 @@ export function RelatedArtists({ similarArtists }: RelatedArtistsProps) {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 mt-1">
-                    {/* Genre pill */}
+                    {/* Genre pill with dominant color background */}
                     {artist.genres && artist.genres.length > 0 && (
                       <Badge
                         variant="outline"
-                        className="bg-white/10 hover:bg-white/20 border-none text-white/80 text-xs"
+                        className="border-none text-white/80 text-xs"
+                        style={{ backgroundColor: `${dominantColor}22` }}
                       >
                         {artist.genres[0].replace(/-/g, " ")}
                       </Badge>
@@ -166,12 +178,16 @@ export function RelatedArtists({ similarArtists }: RelatedArtistsProps) {
         )}
       </div>
 
-      {/* View all / Show less */}
+      {/* View all / Show less with dominant color */}
       {similarArtists.length > 10 && (
         <div className="mt-4 text-center">
           <Button
             variant="outline"
-            className="text-sm border-white/20 hover:border-white/40 bg-transparent"
+            className="text-sm hover:bg-white/10 transition-colors"
+            style={{
+              borderColor: `${dominantColor}66`,
+              color: dominantColor,
+            }}
             onClick={() => setShowAll(!showAll)}
           >
             {showAll ? "Show less" : `View all (${similarArtists.length})`}

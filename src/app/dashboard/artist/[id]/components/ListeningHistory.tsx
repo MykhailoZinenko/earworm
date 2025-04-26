@@ -19,6 +19,7 @@ interface ListeningHistoryProps {
 export function ListeningHistory({
   recentlyPlayed,
   listenData,
+  dominantColor,
 }: ListeningHistoryProps) {
   const trackHistory =
     listenData.trackHistory ||
@@ -211,7 +212,7 @@ export function ListeningHistory({
       {/* Left: Recently played tracks */}
       <div className="min-[110rem]:col-span-2 p-5">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <MusicIcon className="text-[#1ED760]" size={18} />
+          <MusicIcon size={18} style={{ color: dominantColor }} />
           Most Played Songs
         </h3>
 
@@ -246,7 +247,13 @@ export function ListeningHistory({
                   {/* Source indicators */}
                   <div className="flex gap-1">
                     {sources.includes("recent") && (
-                      <span className="inline-flex items-center bg-[#1ED760]/20 text-[#1ED760] text-xs px-1.5 py-0.5 rounded">
+                      <span
+                        className="inline-flex items-center text-xs px-1.5 py-0.5 rounded"
+                        style={{
+                          backgroundColor: `${dominantColor}20`,
+                          color: dominantColor,
+                        }}
+                      >
                         Recent
                       </span>
                     )}
@@ -289,7 +296,7 @@ export function ListeningHistory({
       {/* Right: Listening patterns */}
       <div className="bg-white/5 backdrop-blur-sm rounded-lg p-5">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <HistoryIcon className="text-[#1ED760]" size={18} />
+          <HistoryIcon size={18} style={{ color: dominantColor }} />
           Your Listening Patterns
         </h3>
 
@@ -320,11 +327,14 @@ export function ListeningHistory({
                     key={i}
                     className={`h-8 rounded flex items-center justify-center text-xs font-medium ${
                       isTopDay
-                        ? "bg-[#1ED760] text-black"
+                        ? "text-black"
                         : isActive
                         ? "bg-white/20"
                         : "bg-white/5"
                     }`}
+                    style={{
+                      backgroundColor: isTopDay ? dominantColor : undefined,
+                    }}
                   >
                     {day}
                   </div>
@@ -348,12 +358,14 @@ export function ListeningHistory({
                 <div key={time} className="flex-1">
                   <div className="h-20 bg-white/5 rounded-t overflow-hidden flex items-end">
                     <div
-                      className={`w-full ${
-                        time === topTimeOfDay.time
-                          ? "bg-[#1ED760]"
-                          : "bg-white/30"
-                      }`}
-                      style={{ height: `${percentage}%` }}
+                      className={`w-full`}
+                      style={{
+                        height: `${percentage}%`,
+                        backgroundColor:
+                          time === topTimeOfDay.time
+                            ? dominantColor
+                            : "rgba(255,255,255,0.3)",
+                      }}
                     ></div>
                   </div>
                   <div className="text-[10px] text-center text-white/60 mt-1 truncate">
@@ -373,12 +385,17 @@ export function ListeningHistory({
           {/* Listening Streak - shows how consistently you listen to this artist */}
           <div>
             <h4 className="text-sm text-white/70 mb-2 flex items-center gap-1">
-              <CalendarDays size={14} className="text-[#1ED760]" />
+              <CalendarDays size={14} style={{ color: dominantColor }} />
               Listening Sources
             </h4>
             <div className="flex flex-wrap gap-1 mb-2">
               {trackHistory.some((item) => item.source === "recent") && (
-                <Badge className="bg-[#1ED760] text-black">Recent</Badge>
+                <Badge
+                  className="text-black"
+                  style={{ backgroundColor: dominantColor }}
+                >
+                  Recent
+                </Badge>
               )}
               {trackHistory.some((item) => item.source === "short_term") && (
                 <Badge className="bg-white/20">4 Weeks</Badge>

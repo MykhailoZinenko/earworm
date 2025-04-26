@@ -62,23 +62,23 @@ export function ArtistStats({
   // Array of stats for the artist
   const stats = [
     {
-      icon: <UserCheck size={18} className="text-[#1ED760]" />,
+      icon: <UserCheck size={18} style={{ color: dominantColor }} />,
       label: "Followers",
       value: formatNumber(artist.followers?.total || 0),
     },
     {
-      icon: <BarChart4 size={18} className="text-[#1ED760]" />,
+      icon: <BarChart4 size={18} style={{ color: dominantColor }} />,
       label: "Popularity Score",
       value: `${artist.popularity}/100`,
       showBar: true,
     },
     {
-      icon: <Music size={18} className="text-[#1ED760]" />,
+      icon: <Music size={18} style={{ color: dominantColor }} />,
       label: "Estimated Monthly Listeners",
       value: formatNumber(estimateMonthlyListeners()),
     },
     {
-      icon: <HeadphonesIcon size={18} className="text-[#1ED760]" />,
+      icon: <HeadphonesIcon size={18} style={{ color: dominantColor }} />,
       label: "Your Listening Frequency",
       value: getListeningCategory(),
     },
@@ -103,7 +103,7 @@ export function ArtistStats({
                 className="h-1.5 mt-2 bg-white/10"
                 style={
                   {
-                    "--progress-background": `${dominantColor}`,
+                    "--progress-background": dominantColor,
                   } as React.CSSProperties
                 }
               />
@@ -116,7 +116,7 @@ export function ArtistStats({
       {artist.genres && artist.genres.length > 0 && (
         <div>
           <h3 className="text-sm font-medium mb-3 text-white/70 flex items-center gap-2">
-            <Globe size={16} className="text-[#1ED760]" />
+            <Globe size={16} style={{ color: dominantColor }} />
             Genres
           </h3>
 
@@ -124,7 +124,8 @@ export function ArtistStats({
             {artist.genres.map((genre, index) => (
               <div
                 key={index}
-                className="text-sm bg-white/5 rounded-full px-3 py-1"
+                className="text-sm rounded-full px-3 py-1"
+                style={{ backgroundColor: `${dominantColor}15` }}
               >
                 {formatGenre(genre)}
               </div>
@@ -136,13 +137,19 @@ export function ArtistStats({
       {/* Artist ranking among similar artists */}
       <div>
         <h3 className="text-sm font-medium mb-3 text-white/70 flex items-center gap-2">
-          <Award size={16} className="text-[#1ED760]" />
+          <Award size={16} style={{ color: dominantColor }} />
           Global Artist Ranking
         </h3>
 
-        <div className="bg-white/5 rounded-lg p-4">
+        <div
+          className="rounded-lg p-4"
+          style={{ backgroundColor: `${dominantColor}10` }}
+        >
           <div className="text-center">
-            <div className="text-2xl font-bold">
+            <div
+              className="text-2xl font-bold"
+              style={{ color: dominantColor }}
+            >
               {artist.popularity > 85
                 ? "Top Tier"
                 : artist.popularity > 70
