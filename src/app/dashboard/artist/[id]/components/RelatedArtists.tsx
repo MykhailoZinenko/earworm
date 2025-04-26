@@ -20,9 +20,12 @@ interface RelatedArtistsProps {
 
 export function RelatedArtists({ similarArtists }: RelatedArtistsProps) {
   const [hoveredArtistId, setHoveredArtistId] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
-  // Show only top 10 similar artists
-  const topSimilarArtists = similarArtists.slice(0, 10);
+  // Show only top 10 similar artists unless showAll is true
+  const displayedArtists = showAll
+    ? similarArtists
+    : similarArtists.slice(0, 10);
 
   // Get match strength label based on similarity score
   const getMatchStrength = (score: number) => {
@@ -37,7 +40,7 @@ export function RelatedArtists({ similarArtists }: RelatedArtistsProps) {
   return (
     <ScrollArea className="h-[500px]">
       <div className="grid grid-cols-1 gap-3">
-        {topSimilarArtists.map(({ artist, score, matchReasons }) => {
+        {displayedArtists.map(({ artist, score, matchReasons }) => {
           const matchStrength = getMatchStrength(score);
 
           return (
@@ -150,7 +153,7 @@ export function RelatedArtists({ similarArtists }: RelatedArtistsProps) {
         })}
 
         {/* No similar artists found message */}
-        {topSimilarArtists.length === 0 && (
+        {displayedArtists.length === 0 && (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <div className="bg-white/5 rounded-full p-3 mb-3">
               <Info size={24} className="text-white/60" />
@@ -163,14 +166,15 @@ export function RelatedArtists({ similarArtists }: RelatedArtistsProps) {
         )}
       </div>
 
-      {/* View all */}
+      {/* View all / Show less */}
       {similarArtists.length > 10 && (
         <div className="mt-4 text-center">
           <Button
             variant="outline"
             className="text-sm border-white/20 hover:border-white/40 bg-transparent"
+            onClick={() => setShowAll(!showAll)}
           >
-            View all similar artists
+            {showAll ? "Show less" : `View all (${similarArtists.length})`}
           </Button>
         </div>
       )}
