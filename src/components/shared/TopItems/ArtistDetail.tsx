@@ -1,18 +1,26 @@
-// src/components/shared/TopItems/ArtistDetail.tsx
 import { Artist } from "@spotify/web-api-ts-sdk";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { PlusCircle, Play, ExternalLink } from "lucide-react";
+import { PlusCircle, Play, ExternalLink, Heart, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 interface ArtistDetailProps {
   artist: Artist;
   isMobile: boolean;
+  isFollowing: boolean;
+  onToggleFollow: () => void;
+  isFollowLoading: boolean;
 }
 
-export function ArtistDetail({ artist, isMobile }: ArtistDetailProps) {
+export function ArtistDetail({
+  artist,
+  isMobile,
+  isFollowing,
+  onToggleFollow,
+  isFollowLoading,
+}: ArtistDetailProps) {
   // Background style helper
   const getArtistBackgroundStyle = (artist: Artist) => {
     if (!artist.images || artist.images.length === 0) {
@@ -70,9 +78,23 @@ export function ArtistDetail({ artist, isMobile }: ArtistDetailProps) {
               <Button
                 size="sm"
                 variant="outline"
-                className="border-white/30 hover:border-white"
+                className={`border-white/30 hover:border-white ${
+                  isFollowing
+                    ? "bg-[#1ED760]/20 border-[#1ED760] text-[#1ED760]"
+                    : ""
+                }`}
+                onClick={onToggleFollow}
+                disabled={isFollowLoading}
               >
-                <PlusCircle size={16} className="mr-1" /> Follow
+                {isFollowLoading ? (
+                  <Loader2 size={16} className="mr-1 animate-spin" />
+                ) : (
+                  <Heart
+                    size={16}
+                    className={`mr-1 ${isFollowing ? "fill-current" : ""}`}
+                  />
+                )}
+                {isFollowing ? "Following" : "Follow"}
               </Button>
               <Button size="sm" variant="ghost" className="ml-auto" asChild>
                 <Link href={`/dashboard/artist/${artist.id}`}>
@@ -138,9 +160,23 @@ export function ArtistDetail({ artist, isMobile }: ArtistDetailProps) {
             </Button>
             <Button
               variant="outline"
-              className="border-white/30 hover:border-white"
+              className={`border-white/30 hover:border-white ${
+                isFollowing
+                  ? "bg-[#1ED760]/20 border-[#1ED760] text-[#1ED760]"
+                  : ""
+              }`}
+              onClick={onToggleFollow}
+              disabled={isFollowLoading}
             >
-              <PlusCircle size={18} className="mr-2" /> Follow
+              {isFollowLoading ? (
+                <Loader2 size={18} className="mr-2 animate-spin" />
+              ) : (
+                <Heart
+                  size={18}
+                  className={`mr-2 ${isFollowing ? "fill-current" : ""}`}
+                />
+              )}
+              {isFollowing ? "Following" : "Follow"}
             </Button>
           </div>
 

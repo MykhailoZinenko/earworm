@@ -1,4 +1,3 @@
-// src/components/shared/TopItems/index.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -25,6 +24,14 @@ export function TopItems({ timeRange = "short_term" }: TopItemsProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
 
+  // New state for tracking follow status
+  const [followingStatus, setFollowingStatus] = useState<
+    Record<string, boolean>
+  >({});
+  const [followingLoading, setFollowingLoading] = useState<
+    Record<string, boolean>
+  >({});
+
   useEffect(() => {
     const fetchTopItems = async () => {
       if (!spotifyClient) return;
@@ -44,6 +51,22 @@ export function TopItems({ timeRange = "short_term" }: TopItemsProps) {
         if (artistsResponse.items.length > 0) {
           setSelectedArtist(artistsResponse.items[0]);
         }
+
+        // Fetch follow status for all artists
+        if (artistsResponse.items.length > 0) {
+          const artistIds = artistsResponse.items.map((artist) => artist.id);
+          const followStatus =
+            await spotifyClient.currentUser.followsArtistsOrUsers(
+              artistIds,
+              "artist"
+            );
+
+          const followingMap: Record<string, boolean> = {};
+          artistIds.forEach((id, index) => {
+            followingMap[id] = followStatus[index];
+          });
+          setFollowingStatus(followingMap);
+        }
       } catch (error) {
         console.error("Error fetching top items:", error);
       } finally {
@@ -54,11 +77,43 @@ export function TopItems({ timeRange = "short_term" }: TopItemsProps) {
     fetchTopItems();
   }, [spotifyClient, timeRange]);
 
+  // Function to toggle follow status
+  const toggleFollow = async (artistId: string) => {
+    if (!spotifyClient) return;
+
+    setFollowingLoading((prev) => ({ ...prev, [artistId]: true }));
+
+    try {
+      const isCurrentlyFollowing = followingStatus[artistId];
+
+      if (isCurrentlyFollowing) {
+        await spotifyClient.currentUser.unfollowArtistsOrUsers(
+          [artistId],
+          "artist"
+        );
+      } else {
+        await spotifyClient.currentUser.followArtistsOrUsers(
+          [artistId],
+          "artist"
+        );
+      }
+
+      setFollowingStatus((prev) => ({
+        ...prev,
+        [artistId]: !isCurrentlyFollowing,
+      }));
+    } catch (error) {
+      console.error("Error toggling follow status:", error);
+    } finally {
+      setFollowingLoading((prev) => ({ ...prev, [artistId]: false }));
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="h-64 md:h-96 flex items-center justify-center">
+      <div className="h-64 lg:h-96 flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <div className="w-8 h-8 md:w-12 md:h-12 border-4 border-t-[#1ED760] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+          <div className="w-8 h-8 lg:w-12 lg:h-12 border-4 border-t-[#1ED760] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
           <p className="mt-4 text-[#B3B3B3]">Loading your top music...</p>
         </div>
       </div>
@@ -67,7 +122,7 @@ export function TopItems({ timeRange = "short_term" }: TopItemsProps) {
 
   return (
     <Card className="border-none shadow-lg bg-gradient-to-b from-[#1E1E1E] to-[#121212] py-0">
-      <CardContent className="p-3 md:p-4">
+      <CardContent className="p-3 lg:p-4">
         <Tabs defaultValue="artists" className="w-full">
           <TabsList className="w-full bg-[#333] mb-4">
             <TabsTrigger
@@ -86,16 +141,24 @@ export function TopItems({ timeRange = "short_term" }: TopItemsProps) {
 
           {/* Artists Tab Content */}
           <TabsContent value="artists" className="mt-0">
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
               {/* Selected Artist Details - Mobile */}
               <div className="xl:hidden mt-4">
                 {selectedArtist && (
-                  <ArtistDetail artist={selectedArtist} isMobile={true} />
+                  <ArtistDetail
+                    artist={selectedArtist}
+                    isMobile={true}
+                    isFollowing={followingStatus[selectedArtist.id] || false}
+                    onToggleFollow={() => toggleFollow(selectedArtist.id)}
+                    isFollowLoading={
+                      followingLoading[selectedArtist.id] || false
+                    }
+                  />
                 )}
               </div>
 
               {/* Artist Grid */}
-              <div className="xl:col-span-2 h-[350px] xl:h-[500px]">
+              <div className="xl:col-span-2 h-[350px] lg:h-[500px]">
                 <ScrollArea className="h-full pr-3">
                   <ArtistGrid
                     artists={topArtists}
@@ -103,6 +166,9 @@ export function TopItems({ timeRange = "short_term" }: TopItemsProps) {
                     hoveredItemId={hoveredItemId}
                     onSelectArtist={setSelectedArtist}
                     onHoverChange={setHoveredItemId}
+                    followingStatus={followingStatus}
+                    onToggleFollow={toggleFollow}
+                    followingLoading={followingLoading}
                   />
                 </ScrollArea>
               </div>
@@ -110,15 +176,23 @@ export function TopItems({ timeRange = "short_term" }: TopItemsProps) {
               {/* Selected Artist Details - Desktop */}
               <div className="hidden xl:block">
                 {selectedArtist && (
-                  <ArtistDetail artist={selectedArtist} isMobile={false} />
+                  <ArtistDetail
+                    artist={selectedArtist}
+                    isMobile={false}
+                    isFollowing={followingStatus[selectedArtist.id] || false}
+                    onToggleFollow={() => toggleFollow(selectedArtist.id)}
+                    isFollowLoading={
+                      followingLoading[selectedArtist.id] || false
+                    }
+                  />
                 )}
               </div>
             </div>
           </TabsContent>
 
           {/* Tracks Tab Content */}
-          <TabsContent value="tracks" className="mt-0 space-y-4 xl:space-y-6">
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 xl:gap-6">
+          <TabsContent value="tracks" className="mt-0 space-y-4 lg:space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
               {topTracks.slice(0, 2).map((track, index) => (
                 <FeatureTrackCard
                   key={track.id}
@@ -131,7 +205,7 @@ export function TopItems({ timeRange = "short_term" }: TopItemsProps) {
             </div>
 
             {/* Track List - Desktop */}
-            <div className="hidden xl:block bg-[#121212] rounded-xl overflow-hidden">
+            <div className="hidden lg:block bg-[#121212] rounded-xl overflow-hidden">
               <TrackList
                 tracks={topTracks.slice(2)}
                 startIndex={2}
@@ -141,7 +215,7 @@ export function TopItems({ timeRange = "short_term" }: TopItemsProps) {
             </div>
 
             {/* Track List - Mobile */}
-            <div className="xl:hidden space-y-3">
+            <div className="lg:hidden space-y-3">
               <TrackListMobile
                 tracks={topTracks.slice(2)}
                 startIndex={2}
