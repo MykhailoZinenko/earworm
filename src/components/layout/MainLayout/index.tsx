@@ -1,7 +1,6 @@
-// src/components/layout/MainLayout/index.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { useIsMobile } from "@/hooks/use-responsive";
@@ -11,6 +10,7 @@ import { MobileHeader } from "./MobileHeader";
 import { MobileNavBar } from "./MobileNavBar";
 import { ProfileDropdown } from "./ProfileDropdown";
 import { ChangelogModal } from "./ChangelogModal";
+import { useChangelog } from "@/app/context/ChangelogContext";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -20,7 +20,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   const pathname = usePathname();
   const { currentSession } = useAuth();
   const isMobile = useIsMobile();
-  const [isChangelogOpen, setIsChangelogOpen] = useState(false);
+  const { isOpen, closeChangelog } = useChangelog();
 
   const navItems = [
     {
@@ -36,19 +36,6 @@ export function MainLayout({ children }: MainLayoutProps) {
       active: pathname === "/dashboard/search",
     },
   ];
-
-  // Add global event listener for opening changelog
-  useEffect(() => {
-    const openChangelog = () => {
-      setIsChangelogOpen(true);
-    };
-
-    document.addEventListener("open-changelog", openChangelog);
-
-    return () => {
-      document.removeEventListener("open-changelog", openChangelog);
-    };
-  }, []);
 
   return (
     <>
@@ -90,8 +77,12 @@ export function MainLayout({ children }: MainLayoutProps) {
 
       {/* Changelog Modal */}
       <ChangelogModal
-        open={isChangelogOpen}
-        onOpenChange={setIsChangelogOpen}
+        open={isOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeChangelog();
+          }
+        }}
       />
     </>
   );
