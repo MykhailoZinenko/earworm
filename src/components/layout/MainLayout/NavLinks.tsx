@@ -2,7 +2,7 @@
 // Create a new component for just the navigation links
 import React from "react";
 import Link from "next/link";
-import { Home, SearchCode } from "lucide-react";
+import { History, Home, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -28,7 +28,9 @@ export function NavLinks({ navItems }: NavLinksProps) {
       case "home":
         return <Home className={className} />;
       case "search":
-        return <SearchCode className={className} />;
+        return <Search className={className} />;
+      case "history":
+        return <History className={className} />;
       default:
         return <Home className={className} />;
     }

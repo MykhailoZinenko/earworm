@@ -35,6 +35,12 @@ export function MainLayout({ children }: MainLayoutProps) {
       href: "/dashboard/search",
       active: pathname === "/dashboard/search",
     },
+    {
+      icon: "history",
+      label: "History",
+      href: "/dashboard/history",
+      active: pathname === "/dashboard/history",
+    },
   ];
 
   return (
