@@ -1,5 +1,3 @@
-// src/components/layout/MainLayout/ProfileDropdown.tsx
-import { SpotifyUser } from "@/lib/spotify-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,13 +7,16 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/app/context/AuthContext";
+import { User } from "@/types";
 
 interface ProfileDropdownProps {
-  user: SpotifyUser;
+  user: User;
 }
 
 export function ProfileDropdown({ user }: ProfileDropdownProps) {
   const { logout } = useAuth();
+
+  console.log(user);
 
   return (
     <DropdownMenu>
@@ -29,11 +30,11 @@ export function ProfileDropdown({ user }: ProfileDropdownProps) {
             {user.images && user.images[0] ? (
               <AvatarImage
                 src={user.images[0].url}
-                alt={user.display_name || ""}
+                alt={user.displayName || ""}
               />
             ) : null}
             <AvatarFallback className="bg-[#535353] text-white">
-              {user.display_name?.[0] || "U"}
+              {user.displayName?.[0] || "U"}
             </AvatarFallback>
           </Avatar>
         </Button>

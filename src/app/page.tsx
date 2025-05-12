@@ -6,17 +6,17 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { LoginDropdown } from "@/components/shared/LoginDropdown";
 
 function HomeContent() {
-  const { currentSession, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    console.log(currentSession, isLoading);
+    console.log(user, isLoading);
     // If already authenticated, redirect to dashboard
-    if (!isLoading && currentSession) {
+    if (!isLoading && user) {
       router.push("/dashboard");
     }
-  }, [currentSession, isLoading, router]);
+  }, [user, isLoading, router]);
 
   // Check for error parameter
   const error = searchParams.get("error");

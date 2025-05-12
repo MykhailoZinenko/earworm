@@ -8,17 +8,17 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 
 export default function Dashboard() {
-  const { currentSession } = useAuth();
+  const { user } = useAuth();
   const [timeRange, setTimeRange] = useState<
     "short_term" | "medium_term" | "long_term"
   >("short_term");
 
-  if (!currentSession) return null;
+  if (!user) return null;
 
   return (
     <div className="p-4 md:p-8">
       <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-8">
-        Hello, {currentSession.user.display_name || "there"}!
+        Hello, {user.display_name || "there"}!
       </h1>
 
       {/* <div className="mb-6 md:mb-10">

@@ -10,15 +10,15 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { currentSession, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     // If not authenticated and not loading, redirect to home
-    if (!isLoading && !currentSession) {
+    if (!isLoading && !user) {
       router.push("/");
     }
-  }, [currentSession, isLoading, router]);
+  }, [user, isLoading, router]);
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -30,7 +30,7 @@ export default function DashboardLayout({
   }
 
   // If no session, don't render anything (will redirect in useEffect)
-  if (!currentSession) {
+  if (!user) {
     return null;
   }
 

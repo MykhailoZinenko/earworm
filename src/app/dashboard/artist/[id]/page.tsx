@@ -40,7 +40,7 @@ export type ListenData = {
 
 export default function ArtistPage() {
   const { id } = useParams() as { id: string };
-  const { spotifyClient, currentSession } = useAuth();
+  const { spotifyClient, user } = useAuth();
   const router = useRouter();
 
   const [artist, setArtist] = useState<Artist | null>(null);
@@ -254,7 +254,7 @@ export default function ArtistPage() {
     };
 
     fetchData();
-  }, [id, spotifyClient, currentSession?.user.country]);
+  }, [id, spotifyClient, user?.country]);
 
   // Toggle follow/unfollow artist
   const handleToggleFollow = async () => {

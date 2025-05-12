@@ -18,7 +18,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   const pathname = usePathname();
-  const { currentSession } = useAuth();
+  const { user } = useAuth();
   const isMobile = useIsMobile();
   const { isOpen, closeChangelog } = useChangelog();
 
@@ -62,9 +62,9 @@ export function MainLayout({ children }: MainLayoutProps) {
             </div>
 
             {/* Profile - hidden on smaller screens, shown on medium+ */}
-            {!isMobile && currentSession && (
+            {!isMobile && user && (
               <div className="hidden md:flex items-center ml-4">
-                <ProfileDropdown user={currentSession.user} />
+                <ProfileDropdown user={user} />
               </div>
             )}
           </header>
@@ -76,9 +76,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         </div>
 
         {/* Mobile Navigation Bar */}
-        {isMobile && (
-          <MobileNavBar navItems={navItems} currentSession={currentSession} />
-        )}
+        {isMobile && <MobileNavBar navItems={navItems} currentSession={user} />}
       </div>
 
       {/* Changelog Modal */}

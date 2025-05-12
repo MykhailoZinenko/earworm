@@ -1,262 +1,177 @@
-// src/app/context/AuthContext.tsx
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { SpotifyApi } from "@spotify/web-api-ts-sdk";
+import { Models } from "appwrite";
+import { account } from "@/lib/appwrite/config";
 import {
-  AuthSession,
-  getAllSessions,
-  getCurrentSession,
-  setCurrentSession,
-  removeSession,
-  storeUserSession,
-  isSessionExpired,
-} from "@/lib/spotify-auth";
+  getCurrentUser,
+  saveSpotifyUserToDB,
+  getUserSettings,
+  updateUserSettings,
+  createOAuth2Session,
+  signOutAccount,
+} from "@/lib/appwrite/api";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useChangelog } from "@/app/context/ChangelogContext";
+import { User, Settings } from "@/types";
 
 interface AuthContextType {
-  isLoading: boolean;
-  currentSession: AuthSession | null;
-  allSessions: AuthSession[];
+  user: User | null;
+  settings: Settings | null;
   spotifyClient: SpotifyApi | null;
-  login: (forceNewAccount?: boolean) => void;
-  loginWithSession: (userId: string) => void;
+  isLoading: boolean;
+  login: () => void;
   logout: () => void;
-  removeUserAccount: (userId: string) => void;
-  refreshAuthState: () => void;
+  updateSettings: (settings: Partial<Settings>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
-  isLoading: true,
-  currentSession: null,
-  allSessions: [],
+  user: null,
+  settings: null,
   spotifyClient: null,
+  isLoading: true,
   login: () => {},
-  loginWithSession: () => {},
   logout: () => {},
-  removeUserAccount: () => {},
-  refreshAuthState: () => {},
+  updateSettings: async () => {},
 });
 
-export const useAuth = () => useContext(AuthContext);
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentSession, setCurrentSessionState] = useState<AuthSession | null>(
-    null
-  );
-  const [allSessions, setAllSessions] = useState<AuthSession[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [settings, setSettings] = useState<Settings | null>(null);
   const [spotifyClient, setSpotifyClient] = useState<SpotifyApi | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Initialize Spotify client when session changes
   useEffect(() => {
-    if (currentSession?.accessToken) {
-      try {
-        const client = SpotifyApi.withAccessToken(
-          process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || "",
-          {
-            access_token: currentSession.accessToken,
-            token_type: "Bearer",
-            expires_in: Math.floor(
-              (currentSession.expiresAt - Date.now()) / 1000
-            ),
-            refresh_token: currentSession.refreshToken,
-          }
-        );
-        console.log("in auth context", client);
-        setSpotifyClient(client);
-        console.log("Spotify client initialized", client);
-      } catch (error) {
-        console.error("Error initializing Spotify client:", error);
-        setSpotifyClient(null);
-      }
-    } else {
-      setSpotifyClient(null);
-    }
-  }, [currentSession]);
-
-  // Load sessions from localStorage on component mount
-  useEffect(() => {
-    const initAuth = () => {
-      try {
-        const current = getCurrentSession();
-        const all = getAllSessions();
-
-        console.log("after callback", current);
-
-        setCurrentSessionState(current);
-        setAllSessions(all);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error initializing auth:", error);
-        setIsLoading(false);
-      }
-    };
-
-    initAuth();
+    checkSession();
   }, []);
 
-  const refreshAuthState = () => {
+  const checkSession = async () => {
     try {
-      const current = getCurrentSession();
-      const all = getAllSessions();
+      const session = await account.getSession("current");
 
-      console.log("Auth refresh - current session:", current?.user?.id);
+      if (session) {
+        // Get user from database
+        const { data: userDoc, error: userError } = await getCurrentUser();
 
-      if (current) {
-        setCurrentSessionState(current);
-        setAllSessions(all);
-      }
-    } catch (error) {
-      console.error("Error refreshing auth state:", error);
-    }
-  };
-
-  // Function to refresh an expired token
-  const refreshToken = async (session: AuthSession) => {
-    try {
-      const response = await fetch("/api/auth/refresh", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          refreshToken: session.refreshToken,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to refresh token");
-      }
-
-      const data = await response.json();
-
-      // Update the session with the new tokens
-      const updatedSession: AuthSession = {
-        ...session,
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken || session.refreshToken,
-        expiresAt: data.expiresAt,
-      };
-
-      // Store the updated session
-      storeUserSession(updatedSession);
-
-      // Update state
-      setCurrentSessionState(updatedSession);
-      setAllSessions(getAllSessions());
-
-      return updatedSession;
-    } catch (error) {
-      console.error("Error refreshing token:", error);
-      return null;
-    }
-  };
-
-  // Periodically check if the current session's token is expired and refresh it
-  useEffect(() => {
-    if (!currentSession) return;
-
-    const checkTokenExpiration = async () => {
-      if (isSessionExpired(currentSession)) {
-        console.log("Token expired, refreshing...");
-        await refreshToken(currentSession);
-      }
-    };
-
-    // Check immediately
-    checkTokenExpiration();
-
-    // Then check every minute
-    const interval = setInterval(checkTokenExpiration, 60000);
-
-    return () => clearInterval(interval);
-  }, [currentSession]);
-
-  // Redirect to login page
-  const login = (forceNewAccount = false) => {
-    const forceParam = forceNewAccount ? "?force_login=true" : "";
-    window.location.href = `/api/auth/login${forceParam}`;
-  };
-
-  // Switch to another session
-  const loginWithSession = (userId: string) => {
-    const session = allSessions.find((s) => s.user.id === userId);
-
-    if (!session) {
-      console.error("Session not found for user ID:", userId);
-      return;
-    }
-
-    // If token is expired, refresh it first
-    if (isSessionExpired(session)) {
-      refreshToken(session).then((updatedSession) => {
-        if (updatedSession) {
-          setCurrentSession(userId);
-          setCurrentSessionState(updatedSession);
-          router.push("/dashboard");
+        if (userError || !userDoc) {
+          // User doesn't exist, create from Spotify data
+          const { data: newUser } = await saveSpotifyUserToDB();
+          if (newUser) {
+            setUser(newUser as User);
+            // Get settings for new user
+            const { data: settingsDoc } = await getUserSettings(newUser.$id);
+            if (settingsDoc) {
+              setSettings(settingsDoc as Settings);
+            }
+          }
         } else {
-          // If refresh failed, remove the session and redirect to login
-          removeSession(userId);
-          setAllSessions(getAllSessions());
-          login();
+          setUser(userDoc as User);
+          // Get user settings
+          const { data: settingsDoc } = await getUserSettings(userDoc.$id);
+          if (settingsDoc) {
+            setSettings(settingsDoc as Settings);
+          }
         }
-      });
-    } else {
-      // If token is valid, just set the current session
-      setCurrentSession(userId);
-      setCurrentSessionState(session);
-      router.push("/dashboard");
+
+        // Initialize Spotify client
+        const spotifyClient = await createSpotifyClient(session);
+        setSpotifyClient(spotifyClient);
+      }
+    } catch (error) {
+      console.error("Session check failed:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Logout (clear current session)
-  const logout = () => {
-    if (currentSession) {
-      setCurrentSessionState(null);
-      setSpotifyClient(null);
+  const createSpotifyClient = async (session: Models.Session) => {
+    const providerToken = session.providerAccessToken;
 
-      // Clear current session ID from localStorage
-      setCurrentSession("");
+    if (!providerToken) {
+      throw new Error("No Spotify access token found");
+    }
 
-      // Clear the auth cookie
-      document.cookie =
-        "spotify_current_session=; path=/; max-age=0; SameSite=Lax";
+    const client = SpotifyApi.withAccessToken(
+      process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID!,
+      {
+        access_token: providerToken,
+        token_type: "Bearer",
+        expires_in: 3600,
+        refresh_token: session.providerRefreshToken || "",
+      }
+    );
 
-      router.push("/");
+    return client;
+  };
+
+  const login = async () => {
+    try {
+      const { error } = await createOAuth2Session();
+      if (error) {
+        toast.error(error.message);
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+      toast.error("Failed to login with Spotify");
     }
   };
 
-  // Remove an account
-  const removeUserAccount = (userId: string) => {
-    removeSession(userId);
-    setAllSessions(getAllSessions());
+  const logout = async () => {
+    try {
+      const { error } = await signOutAccount();
+      if (error) {
+        toast.error(error.message);
+      } else {
+        setUser(null);
+        setSettings(null);
+        setSpotifyClient(null);
+        router.push("/");
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
+      toast.error("Failed to logout");
+    }
+  };
 
-    // If we removed the current session, update the current session state
-    if (currentSession && currentSession.user.id === userId) {
-      const newCurrentSession = getCurrentSession();
-      setCurrentSessionState(newCurrentSession);
+  const updateSettings = async (updates: Partial<Settings>) => {
+    if (!settings) return;
+
+    try {
+      const { data: updatedSettings, error } = await updateUserSettings(
+        settings.$id,
+        updates
+      );
+
+      if (error) {
+        toast.error(error.message);
+      } else if (updatedSettings) {
+        setSettings(updatedSettings as Settings);
+        toast.success("Settings updated successfully");
+      }
+    } catch (error) {
+      console.error("Failed to update settings:", error);
+      toast.error("Failed to update settings");
+      throw error;
     }
   };
 
   return (
     <AuthContext.Provider
       value={{
-        isLoading,
-        currentSession,
-        allSessions,
+        user,
+        settings,
         spotifyClient,
+        isLoading,
         login,
-        loginWithSession,
         logout,
-        removeUserAccount,
-        refreshAuthState,
+        updateSettings,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 }
+
+export const useAuth = () => useContext(AuthContext);
